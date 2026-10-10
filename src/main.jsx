@@ -1,983 +1,953 @@
-import { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
-  ArrowDownRight,
   ArrowRight,
-  ArrowUp,
   ArrowUpRight,
-  BarChart3,
-  BriefcaseBusiness,
   Building2,
   Check,
-  CircleCheck,
-  Clock3,
-  Cloud,
+  CircleAlert,
+  Database,
+  FileCheck2,
+  Flame,
   Globe2,
-  Mail,
-  MapPin,
-  Menu,
-  Minus,
-  Phone,
-  Plus,
-  Quote,
+  HardDrive,
+  Info,
+  Layers,
+  Network,
+  Radio,
+  RotateCcw,
+  ShieldAlert,
   ShieldCheck,
   Sliders,
   Sparkles,
-  UsersRound,
+  TrendingUp,
+  Truck,
+  Volume2,
+  VolumeX,
   X,
 } from 'lucide-react'
 import Dashboard from './Dashboard'
 import './styles.css'
 
-const navLinks = [
-  { href: '#about', label: 'Why it exists' },
-  { href: '#capabilities', label: 'Desk views' },
-  { href: '#approach', label: 'Workflow' },
-  { href: '#impact', label: 'Run evidence' },
-  { href: '#faq', label: 'FAQ' },
-]
+const CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+const DUR = 400
 
-const tickerItems = [
-  'SIMULATING 14-DAY PLANNING HORIZON',
-  'LEXICOGRAPHIC PRIORITY OPTIMIZATION (ESSENTIAL > DOMESTIC > COMMERCIAL)',
-  'OR-TOOLS GLOP CONTINUOUS LP SOLVER',
-  'LOCAL-FIRST PRIVACY · ZERO EXTERNAL DISPATCH',
-  'DETERMINISTIC MASS BALANCE: 832,220 KG RECORDED',
-  'HONEST REPORTING · TIES PRESERVED · NO FABRICATED METRICS',
-  'HUMAN-IN-THE-LOOP ALLOCATION REVIEW GATE',
-]
-
-const deskViews = [
-  {
-    number: '01',
-    label: 'Inputs / network',
-    icon: Building2,
-    title: 'Map the supply system',
-    text: 'Load fictional sources, facilities, routes and district demand into one inspectable network. Every quantity has a unit, a provenance and a visible assumption.',
-    detail: '14 nodes · 16 routes · 6 districts',
+const CHAPTER_COPY = {
+  resilience: {
+    rail: '01 RESILIENCE',
+    video: 'vision',
+    lines: ['We protect the flow ', 'of each cylinder'],
+    blurb: [
+      'For 14 planning days, CommonRoot secures critical LPG supply across',
+      'essential health facilities, domestic households and industrial users.',
+      'From import terminal to consumer gate, protecting communities against',
+      'energy disruption.',
+    ],
   },
-  {
-    number: '02',
-    label: 'Scenarios / pressure',
-    icon: BriefcaseBusiness,
-    title: 'Stress the right part',
-    text: 'Try an import shock, route closure, route delay or facility outage. Change one condition at a time so the operational question stays legible.',
-    detail: '5 repeatable disruption fixtures',
+  topology: {
+    rail: '02 TOPOLOGY',
+    video: 'expression',
+    lines: ['Fourteen nodes mapped, ', 'zero blind corridors'],
+    blurb: [
+      'Physical infrastructure cannot be improvised during a crisis. We track',
+      'two deep-water terminals, three bulk storage hubs, three bottling plants',
+      'and six district delivery zones through sixteen constrained transit',
+      'links.',
+    ],
   },
-  {
-    number: '03',
-    label: 'Plans / comparison',
-    icon: BarChart3,
-    title: 'Compare two plans',
-    text: 'Run baseline and candidate allocations against the same physical constraints. If the plans tie, the desk reports a tie instead of inventing an improvement.',
-    detail: 'Priority-aware · independently checked',
+  stress: {
+    rail: '03 STRESS LAB',
+    video: 'craftsmanship',
+    lines: ['Five disruptions, ', 'tested before reality'],
+    blurb: [
+      'From fifty-percent import corridor cuts to six-day bottling outages',
+      'and transit delays. Every shock is tested against physical tank bounds',
+      'and lead times, revealing trapped inventories before deficits reach the',
+      'streets.',
+    ],
   },
-  {
-    number: '04',
-    label: 'Review / export',
-    icon: ShieldCheck,
-    title: 'Leave an evidence trail',
-    text: 'Inspect stocks, shipments, service, unmet demand, cover and assumptions. Record a simulation-only review and export the exact displayed run.',
-    detail: 'JSON · CSV · audit ZIP',
+  solver: {
+    rail: '04 GLOP SOLVER',
+    video: 'refinement',
+    lines: ['Deterministic math, ', 'exact kilograms kept'],
+    blurb: [
+      'Powered by Google OR-Tools continuous linear programming. Every kilogram',
+      'is conserved without hallucinated metrics, solving lexicographic priority',
+      'objectives where life-critical demand takes precedence before commercial',
+      'allocation.',
+    ],
   },
-]
-
-const workflowSteps = [
-  {
-    number: '01',
-    label: 'Frame the question',
-    title: 'Name the disruption before touching the plan.',
-    text: 'Choose the source, facility or route under pressure and define the impact window. The desk keeps the scenario separate from the underlying network.',
+  comparison: {
+    rail: '05 DUAL PLANS',
+    video: 'balance',
+    lines: ['Ties preserved, ', 'no fabricated gains'],
+    blurb: [
+      'Baseline and candidate policies run independently against identical physical',
+      'constraints. When an intervention yields no mathematical delta, the desk',
+      'reports an honest tie instead of inventing an illusion of',
+      'improvement.',
+    ],
   },
-  {
-    number: '02',
-    label: 'Run the fixture',
-    title: 'Apply the change to the same constrained system.',
-    text: 'Supply, demand, route capacity, lead time and stock balance remain visible. There is no hidden fallback feed or silent assumption.',
+  audit: {
+    rail: '06 AUDIT VAULT',
+    video: 'origin',
+    lines: ['Tamper-evident logs, ', 'human in the loop'],
+    blurb: [
+      'No autonomous dispatch, no unverified rationing. Every run generates',
+      'cryptographic JSON evidence, CSV allocation schedules and audit ZIPs,',
+      'requiring explicit human operator review before policy',
+      'acknowledgment.',
+    ],
   },
-  {
-    number: '03',
-    label: 'Inspect the result',
-    title: 'Follow the kilograms, not just the headline.',
-    text: 'Compare service by group, daily stock, shipments, unmet demand and dependency paths. A risk label is a simulation result, not a forecast.',
-  },
-  {
-    number: '04',
-    label: 'Review and export',
-    title: 'Make the boundary part of the decision.',
-    text: 'A human acknowledges the synthetic case and assumptions before a review is recorded. The app does not dispatch stock or write to an external system.',
-  },
-]
-
-const faqs = [
-  {
-    question: 'What is CommonRoot for?',
-    answer: 'CommonRoot is a local-first engineering demonstration for testing LPG supply-disruption scenarios. It computes two allocation plans on the same fictional network and exposes the stocks, shipments, service, unmet demand and assumptions for human review.',
-  },
-  {
-    question: 'What can I change in the planning desk?',
-    answer: 'You can adjust demand, timing, an asset or a policy preset, then run a new simulation. Bundled fixtures cover import shock, route closure, route delay, facility outage and a normal reference case.',
-  },
-  {
-    question: 'Is this connected to a live supply network?',
-    answer: 'No. The included geography, demand, routes, stocks and policy assumptions are synthetic. The landing page and planning desk run locally, and a recorded review does not authorise rationing, dispatch stock or write to another system.',
-  },
-  {
-    question: 'How are the two plans compared?',
-    answer: 'Baseline and candidate are solved independently against the same adjusted network and physical constraints. The comparison preserves ties and reports when a result cannot be computed instead of fabricating a recommendation.',
-  },
-  {
-    question: 'What does a review or export contain?',
-    answer: 'A successful checked run can be acknowledged as simulation-only, with an optional note. Exports retain the exact scenario, network, policy, adjusted schedules, plan rows, district-risk tables, comparison, paths and warnings shown in the desk.',
-  },
-]
-
-const insightPrompts = [
-  {
-    label: 'Question 01',
-    title: 'Where is stock trapped?',
-    text: 'Follow a facility outage through closing stock, outbound capacity and the districts that depend on it.',
-  },
-  {
-    label: 'Question 02',
-    title: 'What arrives too late?',
-    text: 'A route can be open and still miss the horizon. Inspect lead time, dispatch day and arrival day together.',
-  },
-  {
-    label: 'Question 03',
-    title: 'Which assumption changes the result?',
-    text: 'Keep demand, policy, units and provenance close to the output so a number has somewhere to be challenged.',
-  },
-]
-
-function Brand({ onClick }) {
-  return (
-    <a className="brand" href="#home" onClick={onClick} aria-label="CommonRoot home">
-      <span className="brand-mark" aria-hidden="true"><span>CR</span></span>
-      <span className="brand-wordmark"><strong>CommonRoot</strong><small>LPG RESILIENCE / 01</small></span>
-    </a>
-  )
 }
 
-function Header({ menuOpen, setMenuOpen, onOpenDashboard, activeSection, scrollPercent }) {
-  const closeMenu = () => setMenuOpen(false)
+function runDecode(el, originalText, isReducedMotion = false) {
+  if (!el) return
+  const text = originalText || el.dataset.text || el.textContent || ''
+  if (isReducedMotion) {
+    el.textContent = text
+    return
+  }
+  const n = text.length
+  const t0 = performance.now()
+  let lastRoll = 0
+  const rand = new Array(n)
+  const roll = () => {
+    for (let i = 0; i < n; i++) rand[i] = CH.charAt((Math.random() * 26) | 0)
+  }
+  roll()
 
-  useEffect(() => {
-    const onKeyDown = (event) => {
-      if (event.key === 'Escape') closeMenu()
+  if (el._raf) cancelAnimationFrame(el._raf)
+  if (el._t) clearTimeout(el._t)
+
+  const step = (now) => {
+    const p = Math.min(1, (now - t0) / DUR)
+    const front = p * n
+    let out = ''
+    if (now - lastRoll > 45) {
+      roll()
+      lastRoll = now
     }
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [])
-
-  return (
-    <header className="site-header">
-      <div className="scroll-progress-bar" style={{ width: `${scrollPercent}%` }} aria-hidden="true" />
-      <a className="skip-link" href="#main-content">Skip to content</a>
-      <div className="container header-inner">
-        <Brand onClick={closeMenu} />
-        <nav className="desktop-nav" aria-label="Primary navigation">
-          {navLinks.map((link) => {
-            const sectionId = link.href.replace('#', '')
-            const isActive = activeSection === sectionId
-            return (
-              <a
-                key={link.href}
-                href={link.href}
-                className={isActive ? 'is-active-nav' : ''}
-              >
-                {link.label}
-              </a>
-            )
-          })}
-        </nav>
-        <div className="header-actions">
-          <button type="button" className="dashboard-launch" onClick={onOpenDashboard}>
-            Launch Dashboard <ArrowUpRight size={15} aria-hidden="true" />
-          </button>
-          <button type="button" className="menu-toggle" aria-expanded={menuOpen} aria-controls="site-menu" onClick={() => setMenuOpen((value) => !value)}>
-            <span>{menuOpen ? 'Close' : 'Menu'}</span>{menuOpen ? <X size={18} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}
-          </button>
-        </div>
-      </div>
-      <div className={`menu-overlay ${menuOpen ? 'is-open' : ''}`} onClick={closeMenu} aria-hidden="true" />
-      <aside id="site-menu" className={`site-menu ${menuOpen ? 'is-open' : ''}`} aria-label="Site navigation" aria-hidden={!menuOpen}>
-        <div className="menu-top"><span className="eyebrow">Navigate / CommonRoot</span><button type="button" className="menu-close" onClick={closeMenu} aria-label="Close navigation" tabIndex={menuOpen ? 0 : -1}><X size={18} aria-hidden="true" /></button></div>
-        <div className="menu-context"><span className="status-dot is-live" /> Local-first LPG supply-resilience desk</div>
-        <nav>
-          {navLinks.map((link, index) => <a key={link.href} href={link.href} onClick={closeMenu} tabIndex={menuOpen ? 0 : -1}><span>0{index + 1}</span>{link.label}<ArrowRight size={16} aria-hidden="true" /></a>)}
-          <button type="button" className="menu-dashboard" onClick={() => { closeMenu(); onOpenDashboard(); }} tabIndex={menuOpen ? 0 : -1}>
-            <span>↗</span>Launch Operational Panel<ArrowUpRight size={16} aria-hidden="true" />
-          </button>
-        </nav>
-        <div className="menu-footer"><span>Built for questions that need a visible answer.</span><a href="#contact" onClick={closeMenu} tabIndex={menuOpen ? 0 : -1}>Start with a scenario <ArrowRight size={15} aria-hidden="true" /></a></div>
-      </aside>
-    </header>
-  )
-}
-
-function TickerBar() {
-  return (
-    <div className="ticker-wrapper" aria-hidden="true">
-      <div className="ticker-track">
-        {[...tickerItems, ...tickerItems].map((item, index) => (
-          <span key={index} className="ticker-item">
-            <span className="ticker-bullet">✦</span> {item}
-          </span>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function RouteMap() {
-  const [activeNode, setActiveNode] = useState(null)
-
-  const nodes = [
-    { id: 'source', label: 'IMPORT TERMINAL (40,000 kg/d)', cx: 92, cy: 76, r: 10, type: 'source' },
-    { id: 'hub_a', label: 'CENTRAL STORAGE HUB (120,000 kg cap)', cx: 294, cy: 111, r: 9, type: 'hub' },
-    { id: 'hub_b', label: 'EAST BOTTLING PLANT (80,000 kg cap)', cx: 304, cy: 164, r: 9, type: 'hub' },
-    { id: 'nh', label: 'NORTH HILLS DISTRICT (4.50 t/d)', cx: 523, cy: 71, r: 8, type: 'district' },
-    { id: 'rb', label: 'RIVER BEND DISTRICT (8.20 t/d)', cx: 523, cy: 196, r: 8, type: 'district' },
-    { id: 'cg', label: 'CENTRAL GATE (14.50 t/d)', cx: 382, cy: 62, r: 7, type: 'district' },
-  ]
-
-  return (
-    <div className="route-map" role="img" aria-label="Illustrative LPG network with source, storage and district nodes connected by routes">
-      <svg viewBox="0 0 620 254" aria-hidden="true" focusable="false">
-        <path className="route-line route-line-main" d="M92 76 C176 34 226 58 294 111 S421 142 523 71" />
-        <path className="route-line route-line-secondary" d="M92 76 C160 142 217 196 304 164 S420 178 523 196" />
-        <path className="route-line route-line-secondary" d="M294 111 C315 84 336 68 382 62" />
-        <path className="route-line route-line-muted" d="M382 62 C430 93 463 118 523 71" />
-        <path className="route-line route-line-alert" d="M304 164 C372 151 424 145 475 143" />
-        
-        {nodes.map((node) => (
-          <circle
-            key={node.id}
-            className={`route-node route-node-${node.type} ${activeNode === node.id ? 'is-active-node' : ''}`}
-            cx={node.cx}
-            cy={node.cy}
-            r={node.r}
-            onMouseEnter={() => setActiveNode(node.id)}
-            onMouseLeave={() => setActiveNode(null)}
-          />
-        ))}
-        <circle className="route-pulse" cx="475" cy="143" r="18" />
-      </svg>
-      <span className="map-label map-label-source">IMPORT</span>
-      <span className="map-label map-label-hub">HUB / A</span>
-      <span className="map-label map-label-district">NORTH HILLS</span>
-      <span className="map-label map-label-alert">ROUTE DELAY</span>
-      <div className="map-scale">
-        <span />
-        <small>{activeNode ? nodes.find((n) => n.id === activeNode)?.label : 'hover nodes to inspect · dependency view'}</small>
-      </div>
-    </div>
-  )
-}
-
-function HeroConsole({ onOpenDashboard }) {
-  const [activeFixture, setActiveFixture] = useState('import_shock')
-
-  const fixtures = {
-    import_shock: {
-      name: 'Import Corridor Shock',
-      metric: '50%',
-      desc: 'source supply reduction',
-      sub: 'DAY 01 — 10',
-      tag: 'RUN / DEMO-042',
-      demand: '62.45 t/day',
-      stock: '197.22 t',
-      status: 'HIGH DEFICIT',
-    },
-    route_closure: {
-      name: 'Bottling Route Outage',
-      metric: '6 DAYS',
-      desc: 'complete link closure',
-      sub: 'DAY 03 — 08',
-      tag: 'RUN / DEMO-088',
-      demand: '62.45 t/day',
-      stock: '142.10 t',
-      status: 'BOTTLENECK',
-    },
-    route_delay: {
-      name: 'Corridor Transit Delay',
-      metric: '+3 DAYS',
-      desc: 'transit lead time surge',
-      sub: 'DAY 02 — 14',
-      tag: 'RUN / DEMO-103',
-      demand: '62.45 t/day',
-      stock: '188.50 t',
-      status: 'LAG RECOGNIZED',
-    },
-  }
-
-  const f = fixtures[activeFixture]
-
-  return (
-    <div className="hero-console" aria-label="Illustrative CommonRoot planning desk snapshot">
-      <div className="console-chrome">
-        <div className="console-ident">
-          <span className="window-dot" aria-hidden="true" />
-          <span>{f.tag}</span>
-        </div>
-        <div className="console-tabs-mini">
-          {Object.keys(fixtures).map((key) => (
-            <button
-              key={key}
-              type="button"
-              className={`console-tab-chip ${activeFixture === key ? 'is-active' : ''}`}
-              onClick={() => setActiveFixture(key)}
-            >
-              {key === 'import_shock' ? 'Import Shock' : key === 'route_closure' ? 'Closure' : 'Delay'}
-            </button>
-          ))}
-        </div>
-        <span className="console-state">
-          <CircleCheck size={13} aria-hidden="true" /> Checked fixture
-        </span>
-      </div>
-      <div className="console-content">
-        <div className="console-title-row">
-          <div>
-            <span className="eyebrow eyebrow-mint">Scenario / {f.name}</span>
-            <h2>Supply pressure, made visible.</h2>
-          </div>
-          <span className="console-date">DAY 01—14</span>
-        </div>
-        <div className="console-stats">
-          <div><span>Horizon</span><strong>14 <small>days</small></strong></div>
-          <div><span>Demand</span><strong>{f.demand}</strong></div>
-          <div><span>Opening stock</span><strong>{f.stock}</strong></div>
-        </div>
-        <div className="console-workspace">
-          <div className="console-map-panel">
-            <div className="panel-heading"><span>Network / dependency view</span><span>14 nodes · 16 routes</span></div>
-            <RouteMap />
-            <div className="map-legend">
-              <span><i className="legend-source" /> source</span>
-              <span><i className="legend-hub" /> facility</span>
-              <span><i className="legend-alert" /> affected route</span>
-            </div>
-          </div>
-          <div className="console-side-panel">
-            <div className="panel-heading"><span>Scenario window</span><Clock3 size={13} aria-hidden="true" /></div>
-            <div className="scenario-window">
-              <strong>{f.metric}</strong>
-              <span>{f.desc}</span>
-              <em>{f.sub}</em>
-            </div>
-            <div className="console-divider" />
-            <div className="plan-compare">
-              <span className="panel-heading">Plans / same constraints</span>
-              <div><span>Baseline</span><b>PROPORTIONAL</b></div>
-              <div><span>Candidate</span><b>GLOP OPTIMAL</b></div>
-            </div>
-            <button type="button" className="console-launch-pill" onClick={onOpenDashboard}>
-              <span>Inspect in Planning Desk</span>
-              <ArrowUpRight size={13} aria-hidden="true" />
-            </button>
-          </div>
-        </div>
-        <div className="console-log">
-          <span><i className="status-dot is-live" /> synthetic network</span>
-          <span>units / kg LPG</span>
-          <span>external writes / 0</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function HeroSection({ onOpenDashboard }) {
-  return (
-    <section id="home" className="hero-section" aria-labelledby="hero-title">
-      <div className="hero-grid container">
-        <div className="hero-copy">
-          <div className="eyebrow hero-kicker"><span className="status-dot is-live" /> LPG SUPPLY RESILIENCE / DECISION SUPPORT</div>
-          <h1 id="hero-title">Keep LPG moving when the <span>network changes.</span></h1>
-          <p className="hero-lede">CommonRoot is a local-first planning desk for testing supply disruptions across sources, facilities, routes and district demand — before a scenario becomes a service gap.</p>
-          <div className="hero-actions">
-            <button type="button" className="button button-primary" onClick={onOpenDashboard}>
-              Launch Operational Dashboard <ArrowRight size={16} aria-hidden="true" />
-            </button>
-            <a className="button button-quiet" href="#approach">
-              See the operating loop <ArrowDownRight size={16} aria-hidden="true" />
-            </a>
-          </div>
-          <div className="hero-boundary"><ShieldCheck size={16} aria-hidden="true" /><span><strong>Synthetic engineering demonstration.</strong> It computes reviewable scenarios; it does not dispatch stock or write to an operational system.</span></div>
-        </div>
-        <div className="hero-visual">
-          <HeroConsole onOpenDashboard={onOpenDashboard} />
-          <div className="hero-visual-caption">
-            <span>01 / interactive desk snapshot</span>
-            <span>Switch fixtures above · Fictional network · Explicit assumptions</span>
-          </div>
-        </div>
-      </div>
-      <div className="container hero-bottom-line">
-        <span>What the desk answers</span>
-        <div>
-          <span>Where is the constraint?</span>
-          <span>What can still move?</span>
-          <span>What should a human review?</span>
-        </div>
-        <ArrowDownRight size={16} aria-hidden="true" />
-      </div>
-    </section>
-  )
-}
-
-function SignalBand() {
-  return (
-    <section className="signal-band" aria-label="CommonRoot scope">
-      <div className="container signal-band-grid">
-        <div><span className="signal-label">Scope</span><strong>One network</strong><small>sources → facilities → districts</small></div>
-        <div><span className="signal-label">Method</span><strong>Two plans</strong><small>same constraints, independently checked</small></div>
-        <div><span className="signal-label">Unit</span><strong>kg LPG / day</strong><small>mass is explicit; assumptions are visible</small></div>
-        <div><span className="signal-label">Boundary</span><strong>Review first</strong><small>no live dispatch or external writeback</small></div>
-      </div>
-    </section>
-  )
-}
-
-function AboutSection({ onOpenDashboard }) {
-  return (
-    <section id="about" className="section about-section" aria-labelledby="about-title">
-      <div className="container about-grid">
-        <div className="section-intro"><span className="eyebrow">Why this exists / 01</span><div className="section-index">CR<span>→</span>OPS</div></div>
-        <div className="about-copy">
-          <h2 id="about-title">A decision-support desk for the 24 hours before the decision.</h2>
-          <p>Supply networks become difficult to reason about when disruption, timing and competing demand arrive at once. CommonRoot turns a specific “what if?” into a bounded, inspectable run.</p>
-          <p>Load the network. Change one condition. Compare two plans. Then look at the rows that make the headline true.</p>
-          <div className="about-actions-row">
-            <a className="text-link" href="#capabilities">See what is inside the desk <ArrowRight size={15} aria-hidden="true" /></a>
-            <button type="button" className="text-link text-link-accent" onClick={onOpenDashboard}>
-              Launch interactive desk <ArrowUpRight size={15} aria-hidden="true" />
-            </button>
-          </div>
-        </div>
-        <div className="about-notes">
-          <div className="note-card note-card-dark">
-            <Cloud size={19} aria-hidden="true" />
-            <span className="eyebrow eyebrow-mint">Local-first by design</span>
-            <strong>No account. No API key. No hidden feed.</strong>
-            <p>The bundled fixtures run on the machine and keep the scenario boundary in view.</p>
-          </div>
-          <div className="note-list">
-            <div><span>01</span><p>Fictional geography, demand and routes</p></div>
-            <div><span>02</span><p>Explicit units, policy and provenance</p></div>
-            <div><span>03</span><p>Human acknowledgement before review</p></div>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function CapabilitiesSection({ onOpenDashboard }) {
-  return (
-    <section id="capabilities" className="section capabilities-section" aria-labelledby="capabilities-title">
-      <div className="container">
-        <div className="section-heading section-heading-split">
-          <div>
-            <span className="eyebrow eyebrow-teal">Inside the desk / 02</span>
-            <h2 id="capabilities-title">Four views. One operational question.</h2>
-          </div>
-          <p>CommonRoot keeps inputs, scenario changes, allocation results and review evidence close together so you can trace a number back to its cause.</p>
-        </div>
-        <div className="desk-view-grid">
-          {deskViews.map(({ number, label, icon: Icon, title, text, detail }) => (
-            <article className="desk-view-card" key={number} onClick={onOpenDashboard} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') onOpenDashboard() }}>
-              <div className="desk-view-top">
-                <span className="card-number">{number}</span>
-                <span className="desk-view-icon"><Icon size={19} aria-hidden="true" /></span>
-              </div>
-              <span className="card-label">{label}</span>
-              <h3>{title}</h3>
-              <p>{text}</p>
-              <div className="card-detail">
-                <Check size={13} aria-hidden="true" /> {detail}
-                <span className="card-click-hint">Inspect →</span>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function ApproachSection({ onOpenDashboard }) {
-  return (
-    <section id="approach" className="section workflow-section" aria-labelledby="workflow-title">
-      <div className="container">
-        <div className="section-heading section-heading-split">
-          <div>
-            <span className="eyebrow eyebrow-mint">Operating loop / 03</span>
-            <h2 id="workflow-title">From disruption question to reviewable run.</h2>
-          </div>
-          <p>The workflow is deliberately plain. Each step leaves a visible trace, and no result is presented as more certain than its inputs allow.</p>
-        </div>
-        <div className="workflow-list">
-          {workflowSteps.map((step) => (
-            <article className="workflow-row" key={step.number}>
-              <div className="workflow-number">{step.number}</div>
-              <div className="workflow-label">{step.label}</div>
-              <div className="workflow-copy">
-                <h3>{step.title}</h3>
-                <p>{step.text}</p>
-              </div>
-              <ArrowRight className="workflow-arrow" size={17} aria-hidden="true" />
-            </article>
-          ))}
-        </div>
-        <div className="workflow-cta">
-          <Quote size={21} aria-hidden="true" />
-          <p>
-            <strong>The useful answer is not always “choose candidate.”</strong> Sometimes the honest result is that both plans are equal, the inputs are infeasible or the boundary needs a human decision.
-          </p>
-          <button type="button" className="button button-primary" onClick={onOpenDashboard}>
-            Open an illustrative run <ArrowUpRight size={15} aria-hidden="true" />
-          </button>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function ImpactSection({ onOpenDashboard }) {
-  return (
-    <section id="impact" className="section evidence-section" aria-labelledby="evidence-title">
-      <div className="container evidence-grid">
-        <div className="evidence-intro">
-          <span className="eyebrow eyebrow-orange">Run evidence / 04</span>
-          <h2 id="evidence-title">Numbers with a place to go.</h2>
-          <p>A CommonRoot run is not a glossy score. It is a compact record of the scenario, constraints, plan outputs and checks a person can inspect.</p>
-          <div className="evidence-list">
-            <div><span>01</span><p>Scenario and adjusted schedules</p></div>
-            <div><span>02</span><p>Stocks, shipments and service rows</p></div>
-            <div><span>03</span><p>Risk, comparison and warnings</p></div>
-          </div>
-          <button type="button" className="button button-outline-light" onClick={onOpenDashboard}>
-            Inspect the planning desk <ArrowRight size={16} aria-hidden="true" />
-          </button>
-        </div>
-        <div className="run-board">
-          <div className="run-board-top">
-            <span><i className="status-dot is-live" /> RUN / IMPORT SHOCK</span>
-            <span>DEMO-042 · CHECKED</span>
-          </div>
-          <div className="run-board-heading">
-            <div>
-              <span className="eyebrow eyebrow-mint">Synthetic fixture / seed 42</span>
-              <h3>Same network.<br />Different pressure.</h3>
-            </div>
-            <span className="run-board-mark">CR<br /><small>01</small></span>
-          </div>
-          <div className="run-kpis">
-            <div><strong>14</strong><span>day horizon</span></div>
-            <div><strong>62.45t</strong><span>demand / day</span></div>
-            <div><strong>197.22t</strong><span>opening stock</span></div>
-          </div>
-          <div className="run-table">
-            <div className="run-table-head"><span>Review item</span><span>State</span></div>
-            <div><span>Source reduction</span><b>50% / days 01—10</b></div>
-            <div><span>Baseline plan</span><b className="state-ready">INDEPENDENT CHECK</b></div>
-            <div><span>Candidate plan</span><b className="state-ready">INDEPENDENT CHECK</b></div>
-            <div><span>External write</span><b>NONE</b></div>
-          </div>
-          <div className="run-board-foot">
-            <ShieldCheck size={14} aria-hidden="true" />
-            <span>Review boundary active — simulation only</span>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function InsightsSection({ onOpenDashboard }) {
-  return (
-    <section id="insights" className="section insights-section" aria-labelledby="insights-title">
-      <div className="container">
-        <div className="section-heading section-heading-split">
-          <div>
-            <span className="eyebrow eyebrow-teal">Questions to bring / 05</span>
-            <h2 id="insights-title">Start with the constraint, not the dashboard.</h2>
-          </div>
-          <p>Use the desk to make one operational question more precise. These are the questions the synthetic fixtures are designed to help you test.</p>
-        </div>
-        <div className="prompt-grid">
-          {insightPrompts.map((item) => (
-            <article className="prompt-card" key={item.label} onClick={onOpenDashboard} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') onOpenDashboard() }}>
-              <span className="card-label">{item.label}</span>
-              <h3>{item.title}</h3>
-              <p>{item.text}</p>
-              <span className="text-link">Take it to the desk <ArrowRight size={15} aria-hidden="true" /></span>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function FaqSection() {
-  const [openIndex, setOpenIndex] = useState(0)
-  return (
-    <section id="faq" className="section faq-section" aria-labelledby="faq-title">
-      <div className="container faq-grid">
-        <div className="faq-intro">
-          <span className="eyebrow eyebrow-teal">Questions / 06</span>
-          <h2 id="faq-title">Keep the boundary clear.</h2>
-          <p>Plain answers for a synthetic planning tool. The first useful step is knowing exactly what a run can and cannot claim.</p>
-          <a className="text-link" href="#contact">Ask a question <ArrowRight size={15} aria-hidden="true" /></a>
-        </div>
-        <div className="faq-list">
-          {faqs.map((item, index) => {
-            const isOpen = openIndex === index
-            const answerId = `faq-answer-${index}`
-            return (
-              <div className={`faq-item ${isOpen ? 'is-open' : ''}`} key={item.question}>
-                <button
-                  type="button"
-                  className="faq-question"
-                  aria-expanded={isOpen}
-                  aria-controls={answerId}
-                  onClick={() => setOpenIndex(isOpen ? -1 : index)}
-                >
-                  <span>{item.question}</span>
-                  <span className="faq-icon">
-                    {isOpen ? <Minus size={17} aria-hidden="true" /> : <Plus size={17} aria-hidden="true" />}
-                  </span>
-                </button>
-                <div id={answerId} className="faq-answer" role="region" hidden={!isOpen}>
-                  <p>{item.answer}</p>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function ContactSection({ onSubmitted }) {
-  const [form, setForm] = useState({ name: '', email: '', organisation: '', message: '' })
-  const [errors, setErrors] = useState({})
-  const [submitted, setSubmitted] = useState(false)
-
-  const update = (key, value) => {
-    setForm((current) => ({ ...current, [key]: value }))
-    if (errors[key]) setErrors((current) => ({ ...current, [key]: '' }))
-    if (submitted) setSubmitted(false)
-  }
-
-  const submit = (event) => {
-    event.preventDefault()
-    const nextErrors = {}
-    if (!form.name.trim()) nextErrors.name = 'Please add your name.'
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) nextErrors.email = 'Use a valid work email.'
-    if (!form.message.trim() || form.message.trim().length < 20) {
-      nextErrors.message = 'Tell us a little more — 20 characters is enough to start.'
+    for (let i = 0; i < n; i++) {
+      const c = text.charAt(i)
+      if (i < front) out += c
+      else if (i < front + 3.6) out += c === ' ' ? ' ' : rand[i]
+      else break
     }
-    setErrors(nextErrors)
-    if (Object.keys(nextErrors).length > 0) return
-    setSubmitted(true)
-    onSubmitted?.()
+    el.textContent = out
+    if (p < 1) {
+      el._raf = requestAnimationFrame(step)
+    } else {
+      el.textContent = text
+    }
   }
 
-  const resetForm = () => {
-    setSubmitted(false)
-    setErrors({})
-    setForm({ name: '', email: '', organisation: '', message: '' })
-  }
-
-  return (
-    <section id="contact" className="contact-section" aria-labelledby="contact-title">
-      <div className="container contact-grid">
-        <div className="contact-copy">
-          <span className="eyebrow eyebrow-mint">Start a scenario / 07</span>
-          <h2 id="contact-title">Bring the question that feels stuck.</h2>
-          <p>You do not need a perfect brief. Tell us what changed, what you cannot see yet and what a useful first run would help you decide.</p>
-          <div className="contact-points">
-            <div><Mail size={17} aria-hidden="true" /><span><strong>Email</strong><a href="mailto:hello@commonroot.co">hello@commonroot.co</a></span></div>
-            <div><Phone size={17} aria-hidden="true" /><span><strong>Call</strong><a href="tel:+442080501240">+44 (0)20 8050 1240</a></span></div>
-            <div><MapPin size={17} aria-hidden="true" /><span><strong>Build location</strong><span>Local machine · synthetic network</span></span></div>
-          </div>
-          <div className="contact-boundary">
-            <ShieldCheck size={16} aria-hidden="true" />
-            <span>Client-side demonstration form. No message is sent from this page.</span>
-          </div>
-        </div>
-        <div className="contact-form-wrap">
-          {submitted ? (
-            <div className="form-success">
-              <span className="success-icon"><Check size={23} aria-hidden="true" /></span>
-              <span className="eyebrow eyebrow-teal">Message received</span>
-              <h3>We’ll be in touch shortly.</h3>
-              <p>Thanks for sharing the context. A member of the CommonRoot team will reply within two working days.</p>
-              <button type="button" className="button button-primary" onClick={resetForm}>
-                Send another note <ArrowRight size={16} aria-hidden="true" />
-              </button>
-            </div>
-          ) : (
-            <form className="contact-form" onSubmit={submit} noValidate>
-              <div className="form-heading">
-                <span className="eyebrow eyebrow-teal">No sales script / useful first reply</span>
-                <h3>What should we pressure-test?</h3>
-              </div>
-              <div className="form-row">
-                <label htmlFor="contact-name">
-                  Full name
-                  <input
-                    id="contact-name"
-                    type="text"
-                    value={form.name}
-                    onChange={(event) => update('name', event.target.value)}
-                    aria-invalid={Boolean(errors.name)}
-                    aria-describedby={errors.name ? 'name-error' : undefined}
-                    autoComplete="name"
-                  />
-                  {errors.name ? <small id="name-error" className="field-error">{errors.name}</small> : null}
-                </label>
-                <label htmlFor="contact-email">
-                  Work email
-                  <input
-                    id="contact-email"
-                    type="email"
-                    value={form.email}
-                    onChange={(event) => update('email', event.target.value)}
-                    aria-invalid={Boolean(errors.email)}
-                    aria-describedby={errors.email ? 'email-error' : undefined}
-                    autoComplete="email"
-                  />
-                  {errors.email ? <small id="email-error" className="field-error">{errors.email}</small> : null}
-                </label>
-              </div>
-              <label htmlFor="contact-organisation">
-                Organisation <span className="optional">optional</span>
-                <input
-                  id="contact-organisation"
-                  type="text"
-                  value={form.organisation}
-                  onChange={(event) => update('organisation', event.target.value)}
-                  autoComplete="organization"
-                />
-              </label>
-              <label htmlFor="contact-message">
-                The operating question
-                <textarea
-                  id="contact-message"
-                  value={form.message}
-                  onChange={(event) => update('message', event.target.value)}
-                  aria-invalid={Boolean(errors.message)}
-                  aria-describedby={errors.message ? 'message-error' : undefined}
-                  placeholder="For example: what happens if an import source is reduced for ten days?"
-                />
-                {errors.message ? <small id="message-error" className="field-error">{errors.message}</small> : null}
-              </label>
-              <div className="form-submit-row">
-                <span><CircleCheck size={14} aria-hidden="true" /> Your note stays in this demo</span>
-                <button type="submit" className="button button-primary">
-                  Send the question <ArrowRight size={16} aria-hidden="true" />
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function Footer({ onOpenDashboard }) {
-  return (
-    <footer className="site-footer">
-      <div className="container footer-grid">
-        <div className="footer-brand">
-          <Brand />
-          <p>Local-first LPG supply-resilience decision support for synthetic, reviewable scenarios.</p>
-          <div className="footer-meta">
-            <span><i className="status-dot is-live" /> Built for inspection</span>
-            <span>© 2026 CommonRoot</span>
-          </div>
-        </div>
-        <div className="footer-links">
-          <div>
-            <span className="eyebrow">Explore</span>
-            <a href="#about">Why it exists</a>
-            <a href="#capabilities">Desk views</a>
-            <a href="#impact">Run evidence</a>
-          </div>
-          <div>
-            <span className="eyebrow">Use the desk</span>
-            <button type="button" className="footer-btn-link" onClick={onOpenDashboard}>
-              Open planning desk
-            </button>
-            <a href="#approach">Operating loop</a>
-            <a href="#faq">FAQ</a>
-          </div>
-        </div>
-        <div className="footer-social">
-          <span className="eyebrow">Signal</span>
-          <div>
-            <a href="https://www.linkedin.com/" target="_blank" rel="noreferrer" aria-label="LinkedIn">
-              <Globe2 size={16} aria-hidden="true" />
-            </a>
-            <a href="mailto:hello@commonroot.co" aria-label="Email CommonRoot">
-              <Mail size={16} aria-hidden="true" />
-            </a>
-            <a href="#contact" aria-label="Contact CommonRoot">
-              <UsersRound size={16} aria-hidden="true" />
-            </a>
-          </div>
-        </div>
-      </div>
-      <div className="container footer-bottom">
-        <span>Illustrative content / synthetic network / no operational writeback</span>
-        <span>
-          <a href="#home">Privacy</a>
-          <a href="#home">Terms</a>
-          <a href="#home">Back to top <ArrowUp size={13} aria-hidden="true" /></a>
-        </span>
-      </div>
-    </footer>
-  )
-}
-
-function BackToTop() {
-  const [visible, setVisible] = useState(false)
-  useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 560)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-  const goToTop = () => {
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' })
-  }
-  return (
-    <button
-      type="button"
-      className={`back-to-top ${visible ? 'is-visible' : ''}`}
-      onClick={goToTop}
-      aria-label="Back to top"
-    >
-      <ArrowUp size={17} aria-hidden="true" />
-    </button>
-  )
-}
-
-function checkIsDashboard() {
-  const path = window.location.pathname.toLowerCase()
-  const hash = window.location.hash.toLowerCase()
-  return path.includes('dashboard') || path.includes('app') || hash.includes('dashboard') || hash.includes('app')
+  el._raf = requestAnimationFrame(step)
+  el._t = setTimeout(() => {
+    el.textContent = text
+  }, DUR + 500)
 }
 
 function App() {
-  const [view, setView] = useState(() => (checkIsDashboard() ? 'dashboard' : 'landing'))
+  const [activePage, setActivePage] = useState('overview') // 'overview', 'network', 'scenarios', 'dashboard', 'audit', 'stratum'
+  const [chapter, setChapter] = useState('resilience')
+  const [swapping, setSwapping] = useState(false)
+  const [telemetryMode, setTelemetryMode] = useState(false)
+  const [audioActive, setAudioActive] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [notice, setNotice] = useState('')
-  const [activeSection, setActiveSection] = useState('about')
-  const [scrollPercent, setScrollPercent] = useState(0)
+  const [activeNodeHover, setActiveNodeHover] = useState(null)
 
-  // Listen for hash & popstate routing
+  const bgRef = useRef(null)
+  const videoRefs = useRef({})
+  const menuLabelRef = useRef(null)
+  const audioLabelRef = useRef(null)
+
+  const isReducedMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  // Sync hash routing
   useEffect(() => {
-    const handlePopState = () => {
-      setView(checkIsDashboard() ? 'dashboard' : 'landing')
+    const handleHash = () => {
+      const h = window.location.hash.replace('#/', '').replace('#', '')
+      if (['network', 'scenarios', 'dashboard', 'audit', 'stratum'].includes(h)) {
+        setActivePage(h)
+      } else {
+        setActivePage('overview')
+      }
     }
-    window.addEventListener('popstate', handlePopState)
-    window.addEventListener('hashchange', handlePopState)
-    return () => {
-      window.removeEventListener('popstate', handlePopState)
-      window.removeEventListener('hashchange', handlePopState)
-    }
+    handleHash()
+    window.addEventListener('hashchange', handleHash)
+    return () => window.removeEventListener('hashchange', handleHash)
   }, [])
 
-  // Track scroll progress and active section
+  const navigateTo = (page) => {
+    setActivePage(page)
+    window.location.hash = page === 'overview' ? '' : `#/${page}`
+    setMenuOpen(false)
+  }
+
+  // Label width reservation & initial decode
   useEffect(() => {
-    if (view !== 'landing') return
+    const reserveAndBoot = () => {
+      const labels = Array.from(document.querySelectorAll('.t'))
+      labels.forEach((el) => {
+        el.dataset.text = el.dataset.text || el.textContent
+        el.style.width = ''
+      })
+      labels.forEach((el) => {
+        const w = el.getBoundingClientRect().width
+        el.style.width = `${Math.ceil(w * 100) / 100}px`
+      })
 
-    const handleScroll = () => {
-      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight
-      const currentScroll = window.scrollY
-      if (scrollHeight > 0) {
-        setScrollPercent(Math.min(100, Math.max(0, (currentScroll / scrollHeight) * 100)))
-      }
-
-      // Determine active section
-      const sections = ['contact', 'faq', 'insights', 'impact', 'approach', 'capabilities', 'about']
-      for (const id of sections) {
-        const el = document.getElementById(id)
-        if (el) {
-          const rect = el.getBoundingClientRect()
-          if (rect.top <= 200) {
-            setActiveSection(id)
-            break
-          }
-        }
+      if (!isReducedMotion) {
+        labels.forEach((el, i) => {
+          setTimeout(() => runDecode(el, el.dataset.text, isReducedMotion), 350 + i * 35)
+        })
       }
     }
 
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll()
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [view])
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(reserveAndBoot)
+    } else {
+      window.addEventListener('load', reserveAndBoot)
+    }
 
-  const openDashboard = () => {
-    window.location.hash = '#/dashboard'
-    setView('dashboard')
-    window.scrollTo({ top: 0, behavior: 'instant' })
+    const onResize = () => {
+      const labels = Array.from(document.querySelectorAll('.t'))
+      labels.forEach((el) => {
+        el.style.width = ''
+        const w = el.getBoundingClientRect().width
+        el.style.width = `${Math.ceil(w * 100) / 100}px`
+      })
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [chapter, activePage])
+
+  // Parallax background movement
+  useEffect(() => {
+    if (isReducedMotion) return
+    let tx = 0, ty = 0, cx = 0, cy = 0, running = false
+
+    const tick = () => {
+      cx += (tx - cx) * 0.045
+      cy += (ty - cy) * 0.045
+      const w = window.innerWidth
+      const h = window.innerHeight
+      const dx = -cx * w * 0.0156
+      const dy = -cy * h * 0.015
+      const cover = 2 * Math.max(Math.abs(dx) / w, Math.abs(dy) / h)
+      const sc = 1 + cover + 0.014 * Math.max(0, cy)
+
+      if (bgRef.current) {
+        bgRef.current.style.transform = `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0) scale(${sc.toFixed(4)})`
+      }
+
+      if (Math.abs(tx - cx) < 0.0004 && Math.abs(ty - cy) < 0.0004) {
+        running = false
+        return
+      }
+      requestAnimationFrame(tick)
+    }
+
+    const wake = () => {
+      if (!running) {
+        running = true
+        requestAnimationFrame(tick)
+      }
+    }
+
+    const onPointerMove = (e) => {
+      if (e.pointerType === 'touch') return
+      tx = (e.clientX / window.innerWidth) * 2 - 1
+      ty = (e.clientY / window.innerHeight) * 2 - 1
+      wake()
+    }
+
+    const onPointerLeave = () => {
+      tx = 0
+      ty = 0
+      wake()
+    }
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true })
+    document.addEventListener('pointerleave', onPointerLeave)
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove)
+      document.removeEventListener('pointerleave', onPointerLeave)
+    }
+  }, [isReducedMotion])
+
+  // Chapter swap with masked headline transitions
+  const selectChapter = (chId) => {
+    if (chId === chapter || swapping) return
+    setSwapping(true)
+
+    // Play next video clip
+    const nextVideoKey = CHAPTER_COPY[chId].video
+    const nextVid = videoRefs.current[nextVideoKey]
+    if (nextVid) {
+      if (!nextVid.getAttribute('src') && nextVid.dataset.src) {
+        nextVid.preload = 'auto'
+        nextVid.src = nextVid.dataset.src
+        nextVid.load()
+      }
+      try {
+        nextVid.currentTime = 0
+        const pr = nextVid.play()
+        if (pr && pr.catch) pr.catch(() => {})
+      } catch (err) {}
+    }
+
+    setTimeout(() => {
+      setChapter(chId)
+      setSwapping(false)
+    }, isReducedMotion ? 0 : 500)
   }
 
-  const backToLanding = () => {
-    window.location.hash = ''
-    setView('landing')
-    window.scrollTo({ top: 0, behavior: 'instant' })
+  // Toggle Audio state
+  const toggleAudio = () => {
+    const next = !audioActive
+    setAudioActive(next)
+    if (audioLabelRef.current) {
+      audioLabelRef.current.dataset.text = next ? 'AUDIO ON' : 'AUDIO OFF'
+      runDecode(audioLabelRef.current, next ? 'AUDIO ON' : 'AUDIO OFF', isReducedMotion)
+    }
   }
 
-  const onSubmitted = () => {
-    setNotice('Thanks — your operational inquiry has been registered.')
-    window.setTimeout(() => setNotice(''), 4200)
+  // Toggle Menu flyout
+  const toggleMenu = () => {
+    const next = !menuOpen
+    setMenuOpen(next)
+    if (menuLabelRef.current) {
+      const txt = next ? 'CLOSE' : 'MENU'
+      menuLabelRef.current.dataset.text = txt
+      runDecode(menuLabelRef.current, txt, isReducedMotion)
+    }
   }
 
-  if (view === 'dashboard') {
-    return <Dashboard onBackToLanding={backToLanding} />
+  const currentCopy = CHAPTER_COPY[chapter]
+
+  // Render Operational Decision-Support Desk if active
+  if (activePage === 'dashboard') {
+    return <Dashboard onBackToLanding={() => navigateTo('overview')} />
   }
 
   return (
-    <div className="control-room-site">
-      <Header
-        menuOpen={menuOpen}
-        setMenuOpen={setMenuOpen}
-        onOpenDashboard={openDashboard}
-        activeSection={activeSection}
-        scrollPercent={scrollPercent}
-      />
-      <main id="main-content">
-        <HeroSection onOpenDashboard={openDashboard} />
-        <TickerBar />
-        <SignalBand />
-        <AboutSection onOpenDashboard={openDashboard} />
-        <CapabilitiesSection onOpenDashboard={openDashboard} />
-        <ApproachSection onOpenDashboard={openDashboard} />
-        <ImpactSection onOpenDashboard={openDashboard} />
-        <InsightsSection onOpenDashboard={openDashboard} />
-        <FaqSection />
-        <ContactSection onSubmitted={onSubmitted} />
-      </main>
-      <Footer onOpenDashboard={openDashboard} />
-      <BackToTop />
-      {notice ? (
-        <div className="site-toast" role="status" aria-live="polite">
-          <CircleCheck size={16} aria-hidden="true" />
-          {notice}
+    <div className={`stage ${menuOpen ? 'nav-open' : ''}`}>
+      {/* ---------- Background Stage & Video Layers ---------- */}
+      <div
+        className="bg"
+        ref={bgRef}
+        role="img"
+        aria-label="Monolithic architectural stone arch in still mountain waters at dusk"
+      >
+        <video
+          ref={(el) => (videoRefs.current.vision = el)}
+          className={currentCopy.video === 'vision' ? 'on' : ''}
+          data-chapter="vision"
+          src="/assets/video/background.mp4"
+          poster="/assets/img/background.webp"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+        />
+        <video
+          ref={(el) => (videoRefs.current.expression = el)}
+          className={currentCopy.video === 'expression' ? 'on' : ''}
+          data-chapter="expression"
+          data-src="/assets/video/expression.mp4"
+          muted
+          loop
+          playsInline
+          preload="none"
+          aria-hidden="true"
+        />
+        <video
+          ref={(el) => (videoRefs.current.craftsmanship = el)}
+          className={currentCopy.video === 'craftsmanship' ? 'on' : ''}
+          data-chapter="craftsmanship"
+          data-src="/assets/video/craftsmanship.mp4"
+          muted
+          loop
+          playsInline
+          preload="none"
+          aria-hidden="true"
+        />
+        <video
+          ref={(el) => (videoRefs.current.refinement = el)}
+          className={currentCopy.video === 'refinement' ? 'on' : ''}
+          data-chapter="refinement"
+          data-src="/assets/video/refinement.mp4"
+          muted
+          loop
+          playsInline
+          preload="none"
+          aria-hidden="true"
+        />
+        <video
+          ref={(el) => (videoRefs.current.balance = el)}
+          className={currentCopy.video === 'balance' ? 'on' : ''}
+          data-chapter="balance"
+          data-src="/assets/video/balance.mp4"
+          muted
+          loop
+          playsInline
+          preload="none"
+          aria-hidden="true"
+        />
+        <video
+          ref={(el) => (videoRefs.current.origin = el)}
+          className={currentCopy.video === 'origin' ? 'on' : ''}
+          data-chapter="origin"
+          data-src="/assets/video/origin.mp4"
+          muted
+          loop
+          playsInline
+          preload="none"
+          aria-hidden="true"
+        />
+
+        {/* Dynamic Telemetry Graph Layer */}
+        <div className={`bg-telemetry-layer ${telemetryMode ? 'on' : ''}`}>
+          <svg className="telemetry-svg" viewBox="0 0 1280 800" aria-hidden="true">
+            <defs>
+              <linearGradient id="corridorGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.8" />
+                <stop offset="100%" stopColor="#818cf8" stopOpacity="0.2" />
+              </linearGradient>
+            </defs>
+            {/* Supply Routes */}
+            <path d="M 220 280 C 380 240, 480 340, 640 380" stroke="url(#corridorGlow)" strokeWidth="1.5" strokeDasharray="4 6" fill="none" />
+            <path d="M 640 380 C 780 420, 890 320, 1040 340" stroke="url(#corridorGlow)" strokeWidth="1.5" strokeDasharray="4 6" fill="none" />
+            <path d="M 220 280 C 420 460, 560 520, 780 500" stroke="rgba(255,255,255,0.2)" strokeWidth="1" fill="none" />
+            <path d="M 780 500 C 920 490, 980 420, 1060 460" stroke="rgba(255,255,255,0.2)" strokeWidth="1" fill="none" />
+
+            {/* Interactive Nodes */}
+            {[
+              { id: 'T1', label: 'IMPORT TERMINAL NORTH', x: 220, y: 280, type: 'terminal', cap: '40,000 kg/d' },
+              { id: 'H1', label: 'CENTRAL BULK STORAGE', x: 640, y: 380, type: 'hub', cap: '120,000 kg cap' },
+              { id: 'B1', label: 'EAST BOTTLING PLANT', x: 780, y: 500, type: 'plant', cap: '80,000 kg cap' },
+              { id: 'D1', label: 'NORTH HILLS DISTRICT', x: 1040, y: 340, type: 'district', cap: '4.50 t/d demand' },
+              { id: 'D2', label: 'RIVER BEND DISTRICT', x: 1060, y: 460, type: 'district', cap: '8.20 t/d demand' },
+            ].map((node) => (
+              <g
+                key={node.id}
+                onMouseEnter={() => setActiveNodeHover(node)}
+                onMouseLeave={() => setActiveNodeHover(null)}
+                style={{ cursor: 'pointer' }}
+              >
+                <circle cx={node.x} cy={node.y} r="18" fill="rgba(4,7,13,0.8)" stroke="#e8d1cb" strokeWidth="1.2" />
+                <circle cx={node.x} cy={node.y} r="4" fill="#e8d1cb" />
+                <text x={node.x + 24} y={node.y + 4} fill="#e3e8f2" fontFamily="Chakra S" fontSize="10" letterSpacing="1">
+                  {node.id} · {node.label}
+                </text>
+              </g>
+            ))}
+          </svg>
         </div>
-      ) : null}
+      </div>
+
+      {/* ---------- Architectural Frame (30u Inset & Corner Chamfers) ---------- */}
+      <div className="frame">
+        <span className="ln ln-t" />
+        <span className="ln ln-b" />
+        <span className="ln ln-l" />
+        <span className="ln ln-r" />
+        <span className="cn cn-tl" />
+        <span className="cn cn-tr" />
+        <span className="cn cn-bl" />
+        <span className="cn cn-br" />
+
+        {/* Wordmark Logo */}
+        <a
+          className="logo"
+          href="#/"
+          onClick={(e) => {
+            e.preventDefault()
+            navigateTo('overview')
+          }}
+          aria-label="CommonRoot home"
+          onMouseEnter={(e) => {
+            const t = e.currentTarget.querySelector('.t')
+            if (t) runDecode(t, t.dataset.text, isReducedMotion)
+          }}
+        >
+          <svg className="logo-svg" viewBox="0 0 24 24" fill="none" stroke="#e8d1cb" strokeWidth="1.8">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+          <span className="logo-title">
+            <span className="t" data-text="COMMONROOT">
+              COMMONROOT
+            </span>
+          </span>
+          <span className="logo-badge">LPG / 01</span>
+        </a>
+
+        {/* Masthead Navigation */}
+        <nav className="masthead" aria-label="Main">
+          <div className="navset" id="navset">
+            <div className="links lbl">
+              {[
+                { id: 'overview', label: 'OVERVIEW' },
+                { id: 'network', label: 'NETWORK' },
+                { id: 'scenarios', label: 'SCENARIOS' },
+                { id: 'audit', label: 'AUDIT' },
+                { id: 'stratum', label: 'STRATUM' },
+              ].map((link) => (
+                <button
+                  key={link.id}
+                  type="button"
+                  className={activePage === link.id ? 'is-active-link' : ''}
+                  onClick={() => navigateTo(link.id)}
+                  onPointerEnter={(e) => {
+                    const t = e.currentTarget.querySelector('.t')
+                    if (t) runDecode(t, t.dataset.text, isReducedMotion)
+                  }}
+                >
+                  <span className="t" data-text={link.label}>
+                    {link.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className="pill enter lbl"
+              onClick={() => navigateTo('dashboard')}
+              onPointerEnter={(e) => {
+                const t = e.currentTarget.querySelector('.t')
+                if (t) runDecode(t, t.dataset.text, isReducedMotion)
+              }}
+            >
+              <svg className="ico" viewBox="0 0 7 11" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="0" y="0" width="4" height="5" />
+                <rect x="3" y="4" width="4" height="4" />
+                <rect x="0" y="7" width="4" height="4" />
+              </svg>
+              <span className="t" data-text="ENTER">
+                ENTER
+              </span>
+            </button>
+          </div>
+
+          <button
+            className="pill menu lbl"
+            type="button"
+            aria-expanded={menuOpen}
+            aria-controls="navset"
+            onClick={toggleMenu}
+            onPointerEnter={(e) => {
+              const t = e.currentTarget.querySelector('.t')
+              if (t) runDecode(t, t.dataset.text, isReducedMotion)
+            }}
+          >
+            <svg className="ico" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="0" y="0" width="4" height="4" rx=".8" />
+              <rect x="6" y="0" width="4" height="4" rx=".8" />
+              <rect x="0" y="6" width="4" height="4" rx=".8" />
+              <rect x="6" y="6" width="4" height="4" rx=".8" />
+            </svg>
+            <span className="t" ref={menuLabelRef} data-text="MENU">
+              MENU
+            </span>
+          </button>
+        </nav>
+
+        {/* Section / Chapter Index Rail (Left) */}
+        <ul className="index" aria-label="Operational Chapters">
+          {Object.entries(CHAPTER_COPY).map(([key, item]) => {
+            const isActive = chapter === key
+            return (
+              <li key={key} className={isActive ? 'on' : ''}>
+                <button
+                  type="button"
+                  aria-current={isActive ? 'true' : undefined}
+                  onClick={() => selectChapter(key)}
+                  onPointerEnter={(e) => {
+                    const t = e.currentTarget.querySelector('.t')
+                    if (t) runDecode(t, t.dataset.text, isReducedMotion)
+                  }}
+                >
+                  <span className="t" data-text={item.rail}>
+                    {item.rail}
+                  </span>
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+
+        {/* Hero Headline, Blurb & Glass Octagon CTA */}
+        <div className={`hero ${swapping ? 'swapping' : ''}`}>
+          <h1 className="headline">
+            <span className="hrow">
+              <span className="hrise">{currentCopy.lines[0]}</span>
+            </span>
+            <span className="hrow">
+              <span className="hrise">{currentCopy.lines[1]}</span>
+            </span>
+          </h1>
+
+          <p className="blurb">
+            {currentCopy.blurb[0]}
+            <br />
+            {currentCopy.blurb[1]}
+            <br />
+            {currentCopy.blurb[2]}
+            <br />
+            {currentCopy.blurb[3]}
+          </p>
+
+          <button
+            type="button"
+            className="cta lbl"
+            onClick={() => navigateTo('dashboard')}
+            onPointerEnter={(e) => {
+              const t = e.currentTarget.querySelector('.t')
+              if (t) runDecode(t, t.dataset.text, isReducedMotion)
+            }}
+          >
+            <span className="cta-glass" />
+            <svg className="cta-edge" viewBox="0 0 190 41" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M3.5.5 H179.5 L189.5 10.5 V37.5 L186.5 40.5 H10.5 L.5 30.5 V3.5 Z" vectorEffect="non-scaling-stroke" />
+            </svg>
+            <span className="cta-in">
+              <svg className="ico" viewBox="0 0 7 11" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="0" y="0" width="4" height="5" />
+                <rect x="3" y="4" width="4" height="4" />
+                <rect x="0" y="7" width="4" height="4" />
+              </svg>
+              <span className="t" data-text="UNCOVER OUR APPROACH">
+                UNCOVER OUR APPROACH
+              </span>
+            </span>
+          </button>
+        </div>
+
+        {/* Dock (Bottom Row) */}
+        <div className="dock">
+          <span className="rule" />
+          <span className="div div-l" />
+          <span className="div div-r" />
+
+          {/* Left: Mode / Audio Toggle */}
+          <button
+            type="button"
+            className={`audio lbl ${!audioActive ? 'muted' : ''}`}
+            aria-pressed={audioActive}
+            onClick={toggleAudio}
+            onPointerEnter={(e) => {
+              const t = e.currentTarget.querySelector('.t')
+              if (t) runDecode(t, t.dataset.text, isReducedMotion)
+            }}
+          >
+            <svg className="ico" viewBox="0 0 14 11" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M7 0 L7 11 L0.6 7.6 L0.6 3.4 Z" stroke="none" />
+              <path className="wave" d="M9.4 2.2 C10.9 4 10.9 7 9.4 8.8" fill="none" strokeWidth="1.3" strokeLinecap="round" />
+              <path className="wave" d="M11.9 0.6 C14.1 3.3 14.1 7.7 11.9 10.4" fill="none" strokeWidth="1.3" strokeLinecap="round" />
+              <path className="slash" d="M9.2 2.4 L13.8 8.6 M13.8 2.4 L9.2 8.6" fill="none" strokeWidth="1.3" strokeLinecap="round" />
+            </svg>
+            <span className="t" ref={audioLabelRef} data-text={audioActive ? 'AUDIO ON' : 'AUDIO OFF'}>
+              {audioActive ? 'AUDIO ON' : 'AUDIO OFF'}
+            </span>
+          </button>
+
+          {/* Center: Telemetry Canvas Toggle */}
+          <button
+            type="button"
+            className="scroll lbl"
+            onClick={() => setTelemetryMode((prev) => !prev)}
+            onPointerEnter={(e) => {
+              const t = e.currentTarget.querySelector('.t')
+              if (t) runDecode(t, t.dataset.text, isReducedMotion)
+            }}
+          >
+            <svg className="ico" viewBox="0 0 5 7" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M0 0 H5 L2.5 3 Z" />
+              <path d="M0 4 H5 L2.5 7 Z" />
+            </svg>
+            <span className="t" data-text={telemetryMode ? 'CINEMATIC VIEW' : 'NETWORK TELEMETRY'}>
+              {telemetryMode ? 'CINEMATIC VIEW' : 'NETWORK TELEMETRY'}
+            </span>
+          </button>
+
+          {/* Right: Talk with us / Audit */}
+          <button
+            type="button"
+            className="talk lbl"
+            onClick={() => navigateTo('audit')}
+            onPointerEnter={(e) => {
+              const t = e.currentTarget.querySelector('.t')
+              if (t) runDecode(t, t.dataset.text, isReducedMotion)
+            }}
+          >
+            <span className="t" data-text="TALK WITH US">
+              TALK WITH US
+            </span>
+            <svg className="ico" viewBox="0 0 16 15" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M8 .8 C12 .8 15.2 3.8 15.2 7.4 C15.2 11 12 14 8 14 C6.6 14 5.3 13.6 4.2 13 L.9 13.9 L1.9 10.9 C1.2 9.9 .8 8.7 .8 7.4 C.8 3.8 4 .8 8 .8 Z" />
+              <g fill="currentColor" stroke="none">
+                <circle cx="5.2" cy="7.4" r=".95" />
+                <circle cx="8" cy="7.4" r=".95" />
+                <circle cx="10.8" cy="7.4" r=".95" />
+              </g>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* ================= MULTI-PAGE VIEW OVERLAYS ================= */}
+
+      {/* PAGE 1: NETWORK TOPOLOGY BLUEPRINT */}
+      <div className={`page-overlay ${activePage === 'network' ? 'is-active' : ''}`}>
+        <div className="page-container">
+          <div className="page-header-row">
+            <div>
+              <span className="page-tagline">Physical Infrastructure · 14-Node System</span>
+              <h2 className="page-heading">LPG Supply Network & Corridor Architecture</h2>
+            </div>
+            <button type="button" className="page-close-btn" onClick={() => navigateTo('overview')}>
+              <span>ESC</span>
+              <X size={14} />
+            </button>
+          </div>
+
+          <div className="arch-grid">
+            <div className="arch-card">
+              <span className="arch-card-tag">NODE T1 & T2 · SOURCE INGESTION</span>
+              <h3 className="arch-card-title">Deep-Water Terminals</h3>
+              <p className="arch-card-desc">
+                Continuous baseline maritime import streams with physical daily throughput capacity (40,000 kg/day per terminal). Serves as the origin for the 832,220 kg recorded planning mass balance.
+              </p>
+              <div className="arch-card-metric">
+                <span>TOTAL HARBOR STORAGE</span>
+                <strong>180,000 kg</strong>
+              </div>
+            </div>
+
+            <div className="arch-card">
+              <span className="arch-card-tag">NODE H1, H2, H3 · STORAGE BASINS</span>
+              <h3 className="arch-card-title">Bulk Storage Hubs</h3>
+              <p className="arch-card-desc">
+                Intermediate pressure-vessel tanks acting as regional buffers. Governed by minimum buffer thresholds and maximum tank capacities to absorb rail and pipeline transit swings.
+              </p>
+              <div className="arch-card-metric">
+                <span>BUFFER CAPACITY</span>
+                <strong>320,000 kg</strong>
+              </div>
+            </div>
+
+            <div className="arch-card">
+              <span className="arch-card-tag">NODE B1, B2, B3 · BOTTLING PLANTS</span>
+              <h3 className="arch-card-title">Cylinder Bottling Facilities</h3>
+              <p className="arch-card-desc">
+                Transformation tier converting bulk liquefied petroleum gas into 14.2 kg domestic and 19 kg commercial cylinders. Outbound dispatch constrained by truck turnaround cycles.
+              </p>
+              <div className="arch-card-metric">
+                <span>BOTTLING THROUGHPUT</span>
+                <strong>65,000 kg/d</strong>
+              </div>
+            </div>
+
+            <div className="arch-card">
+              <span className="arch-card-tag">NODE D1 - D6 · DISTRICT GATES</span>
+              <h3 className="arch-card-title">Six Demand Districts</h3>
+              <p className="arch-card-desc">
+                Hierarchical consumption tiers classified by strict social criticality: Tier 1 Essential (hospitals, emergency centers), Tier 2 Domestic, and Tier 3 Commercial.
+              </p>
+              <div className="arch-card-metric">
+                <span>DAILY AGGREGATE DEMAND</span>
+                <strong>62,450 kg/d</strong>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '24px' }}>
+            <button
+              type="button"
+              className="page-close-btn"
+              style={{ display: 'inline-flex', padding: '12px 28px' }}
+              onClick={() => navigateTo('dashboard')}
+            >
+              <span>OPEN FULL INTERACTIVE NETWORK IN OPERATIONAL DESK</span>
+              <ArrowRight size={15} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* PAGE 2: DISRUPTION LAB & SCENARIOS */}
+      <div className={`page-overlay ${activePage === 'scenarios' ? 'is-active' : ''}`}>
+        <div className="page-container">
+          <div className="page-header-row">
+            <div>
+              <span className="page-tagline">Repeatable Stress Fixtures · 14-Day Horizon</span>
+              <h2 className="page-heading">Disruption Scenarios & Stress Testing Lab</h2>
+            </div>
+            <button type="button" className="page-close-btn" onClick={() => navigateTo('overview')}>
+              <span>ESC</span>
+              <X size={14} />
+            </button>
+          </div>
+
+          <div className="arch-grid">
+            <div className="arch-card">
+              <span className="arch-card-tag">FIXTURE 01 · DEMO-042</span>
+              <h3 className="arch-card-title">Import Corridor Shock</h3>
+              <p className="arch-card-desc">
+                A 50% supply contraction at Import Terminal North from Day 01 through Day 10. Tests system buffer endurance before domestic rationing is triggered.
+              </p>
+              <div className="arch-card-metric">
+                <span>DURATION / SEVERITY</span>
+                <strong style={{ color: '#ef4444' }}>10 DAYS · -50% INFLOW</strong>
+              </div>
+            </div>
+
+            <div className="arch-card">
+              <span className="arch-card-tag">FIXTURE 02 · DEMO-088</span>
+              <h3 className="arch-card-title">Bottling Route Outage</h3>
+              <p className="arch-card-desc">
+                Complete physical severance of the primary arterial route between Bulk Hub Central and East Bottling Plant for 6 consecutive days.
+              </p>
+              <div className="arch-card-metric">
+                <span>BOTTLENECK IMPACT</span>
+                <strong style={{ color: '#f59e0b' }}>6 DAYS · 0 KG/D LINK FLOW</strong>
+              </div>
+            </div>
+
+            <div className="arch-card">
+              <span className="arch-card-tag">FIXTURE 03 · DEMO-103</span>
+              <h3 className="arch-card-title">Corridor Transit Delay</h3>
+              <p className="arch-card-desc">
+                Logistics bottleneck increasing highway transit lead time from 1 day to 4 days across critical mountain corridors from Day 02 to Day 14.
+              </p>
+              <div className="arch-card-metric">
+                <span>LATENCY SURGE</span>
+                <strong style={{ color: '#38bdf8' }}>+3 DAYS TRANSIT LAG</strong>
+              </div>
+            </div>
+
+            <div className="arch-card">
+              <span className="arch-card-tag">FIXTURE 04 · DEMO-150</span>
+              <h3 className="arch-card-title">Bottling Plant Fire Outage</h3>
+              <p className="arch-card-desc">
+                Catastrophic equipment outage shutting East Bottling Plant for 7 days. Compels candidate policy to reroute bulk fuel to South Plant.
+              </p>
+              <div className="arch-card-metric">
+                <span>FACILITY OUTAGE</span>
+                <strong style={{ color: '#ef4444' }}>7 DAYS · 0 CAPACITY</strong>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '24px' }}>
+            <button
+              type="button"
+              className="page-close-btn"
+              style={{ display: 'inline-flex', padding: '12px 28px' }}
+              onClick={() => navigateTo('dashboard')}
+            >
+              <span>RUN ALLOCATION SOLVER ON THESE SCENARIOS</span>
+              <ArrowRight size={15} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* PAGE 3: EVIDENCE VAULT & AUDIT TRAIL */}
+      <div className={`page-overlay ${activePage === 'audit' ? 'is-active' : ''}`}>
+        <div className="page-container">
+          <div className="page-header-row">
+            <div>
+              <span className="page-tagline">Mathematical Proof · Local-First Privacy</span>
+              <h2 className="page-heading">Evidence Vault & Human-in-the-Loop Gate</h2>
+            </div>
+            <button type="button" className="page-close-btn" onClick={() => navigateTo('overview')}>
+              <span>ESC</span>
+              <X size={14} />
+            </button>
+          </div>
+
+          <div className="arch-grid">
+            <div className="arch-card">
+              <span className="arch-card-tag">CORE PRINCIPLE · LAW 01</span>
+              <h3 className="arch-card-title">Mass Balance Conservation</h3>
+              <p className="arch-card-desc">
+                Strict physical balance enforced at every node: Ending Stock = Starting Stock + Inflows - Outflows. The solver will reject any plan that invents or deletes a single kilogram.
+              </p>
+              <div className="arch-card-metric">
+                <span>VERIFICATION STATUS</span>
+                <strong style={{ color: '#10b981' }}>100% CONSERVED</strong>
+              </div>
+            </div>
+
+            <div className="arch-card">
+              <span className="arch-card-tag">CORE PRINCIPLE · LAW 02</span>
+              <h3 className="arch-card-title">Honest Tie Preservation</h3>
+              <p className="arch-card-desc">
+                When candidate and baseline policies yield identical objective values or zero deficit mitigation, the platform reports an honest mathematical tie instead of hallucinating artificial gains.
+              </p>
+              <div className="arch-card-metric">
+                <span>OBJECTIVE COMPARISON</span>
+                <strong style={{ color: '#38bdf8' }}>ZERO FABRICATED DELTAS</strong>
+              </div>
+            </div>
+
+            <div className="arch-card">
+              <span className="arch-card-tag">CORE PRINCIPLE · LAW 03</span>
+              <h3 className="arch-card-title">Human-in-the-Loop Review</h3>
+              <p className="arch-card-desc">
+                No automatic dispatch or external API actuation. Recommendations remain strictly decision-support until certified by a human operations officer with audit trail logging.
+              </p>
+              <div className="arch-card-metric">
+                <span>DISPATCH GATE</span>
+                <strong style={{ color: '#f59e0b' }}>LOCAL-FIRST PRIVACY</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* PAGE 4: STRATUM HERO SHOWCASE / LIVE PREVIEW */}
+      <div className={`page-overlay ${activePage === 'stratum' ? 'is-active' : ''}`}>
+        <div className="page-container">
+          <div className="page-header-row">
+            <div>
+              <span className="page-tagline">Original Reference Architecture</span>
+              <h2 className="page-heading">Stratum — Single-Page Real-Estate Hero Site</h2>
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <a
+                href="/stratum.html"
+                target="_blank"
+                rel="noreferrer"
+                className="page-close-btn"
+                style={{ textDecoration: 'none' }}
+              >
+                <span>OPEN FULLSCREEN</span>
+                <ArrowUpRight size={14} />
+              </a>
+              <button type="button" className="page-close-btn" onClick={() => navigateTo('overview')}>
+                <span>ESC</span>
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+
+          <div className="stratum-frame-box">
+            <iframe
+              src="/stratum.html"
+              title="Stratum Original Hero Page"
+              className="stratum-iframe"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
