@@ -1,0 +1,15 @@
+{
+  "name": "Western bottling route — six-day closure",
+  "event_type": "route_closure",
+  "affected_id": "route_bottling_west_depot",
+  "start_day": 3,
+  "duration_days": 6,
+  "horizon_days": 14,
+  "reduction_fraction": 1.0,
+  "delay_days": 0,
+  "demand_multiplier": 1.0,
+  "extra_lead_days": 0,
+  "cover_threshold": 2.0,
+  "seed": 42,
+  "notes": "Synthetic engineering stress test; seed=42; generator_version=1.0; data_version=synthetic_corridor_v1; scenario_version=1.1; source_url=null. All impact parameters are illustrative assumptions, not a historical reconstruction."
+}

@@ -1,0 +1,29 @@
+[project]
+name = "commonroot-ai"
+version = "0.2.0"
+description = "Local-first, synthetic LPG allocation decision support"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "networkx>=3.4,<4",
+  "ortools>=9.14,<10",
+  "pandas>=2.2,<3",
+  "pydantic>=2.10,<3",
+  "streamlit>=1.50,<2",
+  "python-dotenv>=1.0,<2",
+  "requests>=2.32,<3",
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "ruff>=0.12,<1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = [".opencode", "node_modules", "dist"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

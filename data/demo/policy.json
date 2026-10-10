@@ -1,0 +1,12 @@
+{
+  "id": "illustrative_priority_v1",
+  "name": "Essential services, then households",
+  "version": "1.0",
+  "tiers": [["essential"], ["household"], ["business"]],
+  "minimum_fractions": {},
+  "caps": {},
+  "enforce_minimums": false,
+  "minimums_verified": false,
+  "illustrative": true,
+  "description": "Illustrative synthetic priority assumption, not an official allocation order. provenance=synthetic; seed=42; generator_version=1.0; data_version=synthetic_corridor_v1; source_url=null. No hard minimum-service floor is imposed."
+}
