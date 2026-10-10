@@ -963,13 +963,13 @@ export default function Dashboard({ onBackToLanding }) {
                       <polygon points="0 0, 7 3.5, 0 7" fill="#64748b" />
                     </marker>
                     <marker id="arrow-exposed" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
-                      <polygon points="0 0, 7 3.5, 0 7" fill="#d97706" />
+                      <polygon points="0 0, 7 3.5, 0 7" fill="#f59e0b" />
                     </marker>
                     <marker id="arrow-disrupted" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto">
-                      <polygon points="0 0, 8 4, 0 8" fill="#dc2626" />
+                      <polygon points="0 0, 8 4, 0 8" fill="#ef4444" />
                     </marker>
                     <marker id="arrow-selected" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto">
-                      <polygon points="0 0, 8 4, 0 8" fill="#0f172a" />
+                      <polygon points="0 0, 8 4, 0 8" fill="#e8d1cb" />
                     </marker>
                   </defs>
 
@@ -1003,20 +1003,20 @@ export default function Dashboard({ onBackToLanding }) {
                     let strokeDash = ''
 
                     if (!edge.active) {
-                      strokeColor = '#cbd5e1'
+                      strokeColor = 'rgba(255, 255, 255, 0.2)'
                       strokeDash = '5 5'
                     } else if (isDisrupted) {
-                      strokeColor = '#dc2626'
+                      strokeColor = '#ef4444'
                       markerType = 'arrow-disrupted'
                       strokeW = 3.0
                     } else if (isAffected) {
-                      strokeColor = '#d97706'
+                      strokeColor = '#f59e0b'
                       markerType = 'arrow-exposed'
                       strokeW = 2.4
                     }
 
                     if (isSelected) {
-                      strokeColor = '#0f172a'
+                      strokeColor = '#e8d1cb'
                       markerType = 'arrow-selected'
                       strokeW = 3.2
                     }
@@ -1078,22 +1078,22 @@ export default function Dashboard({ onBackToLanding }) {
                     const isHovered = hoveredNodeId === node.id
                     const isConnectedToHoveredEdge = connectedNodeIds.includes(node.id)
 
-                    let nodeFill = '#ffffff'
-                    let nodeStroke = '#334155'
+                    let nodeFill = '#0b101a'
+                    let nodeStroke = 'rgba(255, 255, 255, 0.25)'
                     let strokeW = 1.8
 
                     if (isDisrupted) {
-                      nodeFill = '#fff1f2'
-                      nodeStroke = '#dc2626'
+                      nodeFill = 'rgba(239, 68, 68, 0.25)'
+                      nodeStroke = '#ef4444'
                       strokeW = 2.6
                     } else if (isAffected) {
-                      nodeFill = '#fffbeb'
-                      nodeStroke = '#d97706'
+                      nodeFill = 'rgba(245, 158, 11, 0.25)'
+                      nodeStroke = '#f59e0b'
                       strokeW = 2.4
                     }
 
                     if (isSelected) {
-                      nodeStroke = '#0f172a'
+                      nodeStroke = '#e8d1cb'
                       strokeW = 3.2
                     }
 
@@ -1121,7 +1121,7 @@ export default function Dashboard({ onBackToLanding }) {
                             height={isDistrict ? 38 : 40}
                             rx={isDistrict ? 19 : 8}
                             fill="none"
-                            stroke={isDisrupted ? '#dc2626' : isAffected ? '#d97706' : '#0f172a'}
+                            stroke={isDisrupted ? '#ef4444' : isAffected ? '#f59e0b' : '#e8d1cb'}
                             strokeWidth={1.8}
                             strokeDasharray="4 3"
                             className="cr-node-glow-halo"
@@ -1136,7 +1136,7 @@ export default function Dashboard({ onBackToLanding }) {
                             fill={nodeFill}
                             stroke={nodeStroke}
                             strokeWidth={strokeW}
-                            style={{ filter: 'drop-shadow(0 1px 3px rgba(15, 23, 42, 0.1))' }}
+                            style={{ filter: 'drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5))' }}
                           />
                         ) : (
                           <rect
@@ -1148,17 +1148,17 @@ export default function Dashboard({ onBackToLanding }) {
                             fill={nodeFill}
                             stroke={nodeStroke}
                             strokeWidth={strokeW}
-                            style={{ filter: 'drop-shadow(0 1px 3px rgba(15, 23, 42, 0.1))' }}
+                            style={{ filter: 'drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5))' }}
                           />
                         )}
 
-                        {/* Node Label Text in Crisp Dark Slate */}
+                        {/* Node Label Text in Crisp White */}
                         <text
                           x={isDistrict ? 38 : 18}
                           y={isDistrict ? 19 : 45}
                           textAnchor={isDistrict ? 'start' : 'middle'}
                           className="cr-node-text"
-                          fill="#0f172a"
+                          fill="#ffffff"
                           fontWeight="600"
                         >
                           {node.name}

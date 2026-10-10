@@ -148,6 +148,313 @@ function runDecode(el, originalText, isReducedMotion = false) {
   }, DUR + 500)
 }
 
+/* =========================================================================
+   ANIMATED LPG INDUSTRIAL CENTERPIECE COMPONENT
+   Refinery Distillation Splitter, Horton Spherical Tank, Composite Cylinder
+   ========================================================================= */
+function LpgIndustrialCenterpiece({ chapter, onSelectAsset }) {
+  const [activeAsset, setActiveAsset] = useState(null)
+
+  const isShockActive = chapter === 'stress'
+  const isSolverActive = chapter === 'solver'
+
+  return (
+    <div className="lpg-centerpiece-wrap" aria-label="Animated LPG Infrastructure Complex">
+      <svg className="lpg-centerpiece-svg" viewBox="0 0 1000 360">
+        <defs>
+          {/* Radial & Linear Metallic Gradients */}
+          <radialGradient id="sphereGrad" cx="35%" cy="32%" r="68%">
+            <stop offset="0%" stopColor="#334155" />
+            <stop offset="55%" stopColor="#1e293b" />
+            <stop offset="100%" stopColor="#0b101a" />
+          </radialGradient>
+
+          <linearGradient id="cylinderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#0f172a" />
+            <stop offset="35%" stopColor="#334155" />
+            <stop offset="70%" stopColor="#1e293b" />
+            <stop offset="100%" stopColor="#090d16" />
+          </linearGradient>
+
+          <linearGradient id="liquidGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={isShockActive ? '#f59e0b' : '#38bdf8'} stopOpacity="0.85" />
+            <stop offset="100%" stopColor={isShockActive ? '#b45309' : '#0284c7'} stopOpacity="0.95" />
+          </linearGradient>
+
+          <linearGradient id="towerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#1e293b" />
+            <stop offset="45%" stopColor="#475569" />
+            <stop offset="85%" stopColor="#1e293b" />
+            <stop offset="100%" stopColor="#0f172a" />
+          </linearGradient>
+
+          <linearGradient id="flareGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+            <stop offset="0%" stopColor="#ef4444" />
+            <stop offset="60%" stopColor="#f59e0b" />
+            <stop offset="100%" stopColor="#fef08a" />
+          </linearGradient>
+
+          <clipPath id="sphereClip">
+            <circle cx="500" cy="185" r="77" />
+          </clipPath>
+        </defs>
+
+        {/* Ambient Ground Grid Lines */}
+        <line x1="80" y1="320" x2="920" y2="320" stroke="rgba(255,255,255,0.12)" strokeWidth="1" strokeDasharray="4 6" />
+
+        {/* ================= 1. REFINERY DISTILLATION COLUMN (LEFT) ================= */}
+        <g
+          className="lpg-asset-interactive"
+          onMouseEnter={() =>
+            setActiveAsset({
+              title: 'FRACTIONATION COLUMN C-101',
+              subtitle: 'Propane / Butane Splitter Column',
+              spec: 'Design Cap: 40,000 kg/day · 24 Trays',
+              state: isShockActive ? 'THROTTLED (-50% Inflow)' : 'NOMINAL REFLUX',
+            })
+          }
+          onMouseLeave={() => setActiveAsset(null)}
+        >
+          {/* Concrete Base */}
+          <rect x="150" y="310" width="80" height="12" rx="2" fill="#0f172a" stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
+
+          {/* Tower Main Body */}
+          <rect x="160" y="86" width="60" height="224" rx="4" fill="url(#towerGrad)" stroke="#e8d1cb" strokeWidth="1.2" />
+
+          {/* Top Dished Dome */}
+          <ellipse cx="190" cy="86" rx="30" ry="12" fill="#334155" stroke="#e8d1cb" strokeWidth="1.2" />
+
+          {/* Safety Flare Stack on top of tower */}
+          <line x1="190" y1="74" x2="190" y2="48" stroke="#cbd5e1" strokeWidth="3" />
+          <path className="lpg-flare-flame" d="M187 48 C185 40, 190 32, 190 26 C190 32, 195 40, 193 48 Z" fill="url(#flareGrad)" />
+
+          {/* Horizontal Distillation Trays with Sight Inspection Windows */}
+          {[120, 155, 190, 225, 260, 290].map((y, idx) => (
+            <g key={idx}>
+              <line x1="160" y1={y} x2="220" y2={y} stroke="rgba(255,255,255,0.22)" strokeWidth="1" />
+              <rect x="180" y={y - 8} width="20" height="6" rx="3" fill="rgba(56,189,248,0.2)" stroke="#38bdf8" strokeWidth="0.8" />
+              {/* Animated rising vapor indicator inside sight glass */}
+              <circle cx="190" cy={y - 5} r="1.5" fill="#fef08a" className="lpg-vapor-bubble" />
+            </g>
+          ))}
+
+          {/* External Structural Platforms & Safety Ladder */}
+          <line x1="222" y1="90" x2="222" y2="310" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+          {[100, 130, 160, 190, 220, 250, 280, 305].map((y, i) => (
+            <line key={i} x1="219" y1={y} x2="225" y2={y} stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
+          ))}
+
+          {/* Reflux Piping */}
+          <path d="M 190 86 C 240 86, 245 140, 220 140" fill="none" stroke="#e8d1cb" strokeWidth="1.6" />
+
+          {/* HUD Tag */}
+          <text x="190" y="336" textAnchor="middle" className="lpg-hud-tag">
+            REFINERY TOWER C-101
+          </text>
+          <text x="190" y="348" textAnchor="middle" className="lpg-hud-val">
+            40,000 kg/d · 24 Trays
+          </text>
+        </g>
+
+        {/* ================= 2. HORTON SPHERICAL STORAGE TANK (CENTER) ================= */}
+        <g
+          className="lpg-asset-interactive"
+          onMouseEnter={() =>
+            setActiveAsset({
+              title: 'HORTON SPHERE S-101',
+              subtitle: 'Bulk Liquefied Petroleum Buffer Tank',
+              spec: 'Storage Cap: 120,000 kg · Pressure: 15.2 Bar',
+              state: isShockActive ? 'DRAINING BUFFER' : 'STEADY STORAGE (85% Fill)',
+            })
+          }
+          onMouseLeave={() => setActiveAsset(null)}
+        >
+          {/* Structural Steel Support Legs */}
+          {[432, 452, 475, 525, 548, 568].map((lx, i) => (
+            <g key={i}>
+              <line x1={lx} y1="230" x2={lx} y2="315" stroke="rgba(255,255,255,0.35)" strokeWidth="2.5" />
+              <rect x={lx - 4} y="313" width="8" height="7" fill="#0f172a" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
+            </g>
+          ))}
+          {/* Cross Bracing */}
+          <line x1="432" y1="280" x2="475" y2="240" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+          <line x1="525" y1="240" x2="568" y2="280" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+
+          {/* Sphere Solid Shell */}
+          <circle cx="500" cy="185" r="77" fill="url(#sphereGrad)" stroke="#e8d1cb" strokeWidth="1.8" />
+
+          {/* Internal Animated Liquid LPG Level (Clipped to Sphere) */}
+          <g clipPath="url(#sphereClip)">
+            {/* Liquid Mass Fill */}
+            <rect x="420" y={isShockActive ? '180' : '150'} width="160" height="120" fill="url(#liquidGrad)" />
+            {/* Waving Surface */}
+            <path
+              className="lpg-liquid-fill"
+              d={
+                isShockActive
+                  ? 'M 410 180 Q 450 174, 500 180 T 590 180 L 590 270 L 410 270 Z'
+                  : 'M 410 150 Q 450 144, 500 150 T 590 150 L 590 270 L 410 270 Z'
+              }
+              fill="url(#liquidGrad)"
+              opacity="0.85"
+            />
+          </g>
+
+          {/* Equatorial Seam & Rivet Accents */}
+          <ellipse cx="500" cy="185" rx="77" ry="16" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="3 4" />
+
+          {/* Top Access Spiral & Safety Valve Dome */}
+          <rect x="492" y="100" width="16" height="8" rx="2" fill="#334155" stroke="#e8d1cb" strokeWidth="1" />
+          <line x1="500" y1="100" x2="500" y2="88" stroke="#cbd5e1" strokeWidth="2" />
+          <circle cx="500" cy="86" r="3.5" fill="#f59e0b" />
+
+          {/* Digital Telemetry Gauge on Sphere Front */}
+          <rect x="466" y="172" width="68" height="26" rx="4" fill="rgba(4,7,13,0.85)" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+          <text x="500" y="184" textAnchor="middle" fill="#10b981" fontFamily="JetBrains Mono" fontSize="8" fontWeight="700">
+            {isShockActive ? '62,400 KG' : '120,000 KG'}
+          </text>
+          <text x="500" y="194" textAnchor="middle" fill="#94a3b8" fontFamily="JetBrains Mono" fontSize="7">
+            15.2 BAR · 85%
+          </text>
+
+          {/* HUD Tag */}
+          <text x="500" y="336" textAnchor="middle" className="lpg-hud-tag">
+            HORTON SPHERE S-101
+          </text>
+          <text x="500" y="348" textAnchor="middle" className="lpg-hud-val">
+            120,000 kg cap · Pressure Vessel
+          </text>
+        </g>
+
+        {/* ================= 3. COMPOSITE LPG CYLINDER (RIGHT) ================= */}
+        <g
+          className="lpg-asset-interactive"
+          onMouseEnter={() =>
+            setActiveAsset({
+              title: 'COMPOSITE CYLINDER B-301',
+              subtitle: '14.2 kg Domestic Consumer Cylinder',
+              spec: 'Tare Wt: 5.2 kg · Test Pressure: 30 Bar',
+              state: 'FULL SEALED · DISPATCH READY',
+            })
+          }
+          onMouseLeave={() => setActiveAsset(null)}
+        >
+          {/* Footring Base Stand */}
+          <path d="M 764 300 L 760 314 L 840 314 L 836 300 Z" fill="#0f172a" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+
+          {/* Main Cylinder Pressure Vessel */}
+          <rect x="760" y="148" width="80" height="152" rx="22" fill="url(#cylinderGrad)" stroke="#e8d1cb" strokeWidth="1.6" />
+
+          {/* Weld Ring Bands */}
+          <line x1="760" y1="185" x2="840" y2="185" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+          <line x1="760" y1="265" x2="840" y2="265" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+
+          {/* Top Protective Shroud Collar with Dual Handle Cutouts */}
+          <path
+            d="M 770 148 C 770 120, 830 120, 830 148 Z"
+            fill="#1e293b"
+            stroke="#e8d1cb"
+            strokeWidth="1.4"
+          />
+          {/* Handle Cutout Holes */}
+          <rect x="785" y="132" width="30" height="8" rx="4" fill="#04070d" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+
+          {/* Precision Brass Valve & Handwheel */}
+          <rect x="795" y="118" width="10" height="14" fill="#f59e0b" stroke="#d97706" strokeWidth="1" />
+          <ellipse cx="800" cy="116" rx="9" ry="3" fill="#b45309" />
+
+          {/* Vertical Liquid Level Strip on Front of Cylinder */}
+          <rect x="796" y="195" width="8" height="60" rx="4" fill="rgba(4,7,13,0.8)" stroke="rgba(255,255,255,0.2)" strokeWidth="0.8" />
+          <rect x="797.5" y="210" width="5" height="42" rx="2.5" fill="#10b981" />
+
+          {/* Pressure Dial Gauge */}
+          <circle cx="800" cy="278" r="10" fill="#0b101a" stroke="#e8d1cb" strokeWidth="1" />
+          <line className="lpg-dial-needle" x1="800" y1="278" x2="800" y2="271" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" />
+
+          {/* HUD Tag */}
+          <text x="800" y="336" textAnchor="middle" className="lpg-hud-tag">
+            COMPOSITE CYLINDER B-301
+          </text>
+          <text x="800" y="348" textAnchor="middle" className="lpg-hud-val">
+            14.2 kg Domestic · Type 4
+          </text>
+        </g>
+
+        {/* ================= 4. CONNECTING PIPELINE MANIFOLDS ================= */}
+        {/* Pipe 1: Terminal to Refinery Inflow */}
+        <path d="M 60 210 L 160 210" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="4" />
+        <path
+          className="lpg-pipe-active"
+          d="M 60 210 L 160 210"
+          fill="none"
+          stroke={isShockActive ? '#f59e0b' : '#38bdf8'}
+          strokeWidth="2.5"
+        />
+
+        {/* Pipe 2: Refinery Output to Horton Sphere Inbound */}
+        <path d="M 220 185 C 330 140, 380 160, 423 185" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="4" />
+        <path
+          className="lpg-pipe-active"
+          d="M 220 185 C 330 140, 380 160, 423 185"
+          fill="none"
+          stroke={isShockActive ? '#f59e0b' : '#38bdf8'}
+          strokeWidth="2.5"
+        />
+
+        {/* Pipe 3: Horton Sphere Bottom Outflow to Bottling Manifold */}
+        <path d="M 577 185 C 640 185, 700 210, 760 210" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="4" />
+        <path
+          className="lpg-pipe-active"
+          d="M 577 185 C 640 185, 700 210, 760 210"
+          fill="none"
+          stroke="#10b981"
+          strokeWidth="2.5"
+        />
+
+        {/* High-Pressure Control Valves */}
+        <circle cx="280" cy="168" r="5" fill="#04070d" stroke="#e8d1cb" strokeWidth="1.2" />
+        <circle cx="280" cy="168" r="2.5" fill={isShockActive ? '#f59e0b' : '#10b981'} />
+
+        <circle cx="670" cy="198" r="5" fill="#04070d" stroke="#e8d1cb" strokeWidth="1.2" />
+        <circle cx="670" cy="198" r="2.5" fill="#10b981" />
+      </svg>
+
+      {/* Interactive Floating Dossier Tooltip */}
+      {activeAsset && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '8px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'rgba(11, 16, 26, 0.92)',
+            border: '1px solid rgba(232, 209, 203, 0.3)',
+            borderRadius: '6px',
+            padding: '8px 18px',
+            backdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            pointerEvents: 'none',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+          }}
+        >
+          <div>
+            <strong style={{ display: 'block', fontFamily: 'Chakra S', fontSize: '11px', color: '#e8d1cb', letterSpacing: '0.05em' }}>
+              {activeAsset.title}
+            </strong>
+            <span style={{ fontSize: '11px', color: '#94a3b8' }}>{activeAsset.subtitle}</span>
+          </div>
+          <div style={{ borderLeft: '1px solid rgba(255,255,255,0.12)', paddingLeft: '14px', fontFamily: 'JetBrains Mono', fontSize: '10.5px' }}>
+            <span style={{ display: 'block', color: '#e2e8f0' }}>{activeAsset.spec}</span>
+            <span style={{ color: isShockActive ? '#f59e0b' : '#10b981', fontWeight: 700 }}>{activeAsset.state}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function App() {
   const [activePage, setActivePage] = useState('overview') // 'overview', 'network', 'scenarios', 'dashboard', 'audit', 'stratum'
   const [chapter, setChapter] = useState('resilience')
@@ -155,7 +462,6 @@ function App() {
   const [telemetryMode, setTelemetryMode] = useState(false)
   const [audioActive, setAudioActive] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [activeNodeHover, setActiveNodeHover] = useState(null)
 
   const bgRef = useRef(null)
   const videoRefs = useRef({})
@@ -282,7 +588,7 @@ function App() {
     if (chId === chapter || swapping) return
     setSwapping(true)
 
-    // Play next video clip
+    // Play next video clip if available
     const nextVideoKey = CHAPTER_COPY[chId].video
     const nextVid = videoRefs.current[nextVideoKey]
     if (nextVid) {
@@ -339,7 +645,7 @@ function App() {
         className="bg"
         ref={bgRef}
         role="img"
-        aria-label="Monolithic architectural stone arch in still mountain waters at dusk"
+        aria-label="LPG Supply Resilience and Allocation Infrastructure Stage"
       >
         <video
           ref={(el) => (videoRefs.current.vision = el)}
@@ -424,31 +730,12 @@ function App() {
             <path d="M 640 380 C 780 420, 890 320, 1040 340" stroke="url(#corridorGlow)" strokeWidth="1.5" strokeDasharray="4 6" fill="none" />
             <path d="M 220 280 C 420 460, 560 520, 780 500" stroke="rgba(255,255,255,0.2)" strokeWidth="1" fill="none" />
             <path d="M 780 500 C 920 490, 980 420, 1060 460" stroke="rgba(255,255,255,0.2)" strokeWidth="1" fill="none" />
-
-            {/* Interactive Nodes */}
-            {[
-              { id: 'T1', label: 'IMPORT TERMINAL NORTH', x: 220, y: 280, type: 'terminal', cap: '40,000 kg/d' },
-              { id: 'H1', label: 'CENTRAL BULK STORAGE', x: 640, y: 380, type: 'hub', cap: '120,000 kg cap' },
-              { id: 'B1', label: 'EAST BOTTLING PLANT', x: 780, y: 500, type: 'plant', cap: '80,000 kg cap' },
-              { id: 'D1', label: 'NORTH HILLS DISTRICT', x: 1040, y: 340, type: 'district', cap: '4.50 t/d demand' },
-              { id: 'D2', label: 'RIVER BEND DISTRICT', x: 1060, y: 460, type: 'district', cap: '8.20 t/d demand' },
-            ].map((node) => (
-              <g
-                key={node.id}
-                onMouseEnter={() => setActiveNodeHover(node)}
-                onMouseLeave={() => setActiveNodeHover(null)}
-                style={{ cursor: 'pointer' }}
-              >
-                <circle cx={node.x} cy={node.y} r="18" fill="rgba(4,7,13,0.8)" stroke="#e8d1cb" strokeWidth="1.2" />
-                <circle cx={node.x} cy={node.y} r="4" fill="#e8d1cb" />
-                <text x={node.x + 24} y={node.y + 4} fill="#e3e8f2" fontFamily="Chakra S" fontSize="10" letterSpacing="1">
-                  {node.id} · {node.label}
-                </text>
-              </g>
-            ))}
           </svg>
         </div>
       </div>
+
+      {/* ================= ANIMATED LPG INDUSTRIAL CENTERPIECE ================= */}
+      <LpgIndustrialCenterpiece chapter={chapter} />
 
       {/* ---------- Architectural Frame (30u Inset & Corner Chamfers) ---------- */}
       <div className="frame">
