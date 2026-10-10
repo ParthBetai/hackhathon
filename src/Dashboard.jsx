@@ -342,7 +342,6 @@ export default function Dashboard({ onBackToLanding }) {
         <div className="cr-dash-header-main">
           <div className="cr-header-title-group">
             <div className="cr-brand-badge">
-              <span className="cr-brand-pulse" />
               <span className="cr-brand-code">CR-OPS</span>
               <span className="cr-brand-status">MODEL v1.1</span>
             </div>
@@ -473,63 +472,69 @@ export default function Dashboard({ onBackToLanding }) {
                 <span className="cr-data-tag">ALL QUANTITIES IN KG LPG</span>
               </div>
 
-              <div className="cr-kpi-grid">
-                <div className="cr-kpi-card cr-kpi-cyan">
-                  <span className="cr-kpi-eyebrow">TOTAL AVAILABLE SUPPLY</span>
+              <div className="cr-kpi-grid cr-kpi-grid-4">
+                <div className="cr-kpi-card cr-kpi-forest">
+                  <div className="cr-kpi-top">
+                    <span className="cr-kpi-eyebrow">TOTAL AVAILABLE SUPPLY</span>
+                    <span className="cr-kpi-badge cr-badge-forest">AUDITED STOCK</span>
+                  </div>
                   <div className="cr-kpi-value">{formatKg(candidate.metrics?.total_available)} <span className="cr-unit">kg</span></div>
                   <div className="cr-kpi-sub">
-                    {formatTonnes(candidate.metrics?.total_available)} · Opening ({formatTonnes(candidate.metrics?.initial_stock)}) + Inflow Q ({formatTonnes(candidate.metrics?.total_supply)})
+                    {formatTonnes(candidate.metrics?.total_available)} t aggregate · Opening ({formatTonnes(candidate.metrics?.initial_stock)} t) + Scheduled Inflows ({formatTonnes(candidate.metrics?.total_supply)} t)
                   </div>
+                  <p className="cr-kpi-explain">
+                    Combined physical inventory accessible across deepwater import terminals, refinery buffers, and primary storage over the active {scenario.horizon_days}-day planning horizon.
+                  </p>
                 </div>
 
-                <div className="cr-kpi-card cr-kpi-amber">
-                  <span className="cr-kpi-eyebrow">HORIZON DEMAND FULFILLED</span>
+                <div className="cr-kpi-card cr-kpi-copper">
+                  <div className="cr-kpi-top">
+                    <span className="cr-kpi-eyebrow">HORIZON DEMAND FULFILLED</span>
+                    <span className="cr-kpi-badge cr-badge-copper">TIER 1 PROTECTED</span>
+                  </div>
                   <div className="cr-kpi-value">{formatPercent(candidate.metrics?.fulfilment)}</div>
                   <div className="cr-kpi-sub">
-                    {formatKg(candidate.metrics?.total_served)} kg served of {formatKg(candidate.metrics?.total_demand)} kg demand
+                    {formatKg(candidate.metrics?.total_served)} kg served of {formatKg(candidate.metrics?.total_demand)} kg aggregate demand
                   </div>
+                  <p className="cr-kpi-explain">
+                    Essential Medical &amp; Care facilities maintained at 100% allocation. Commercial and domestic services balanced according to equitable district vulnerability rankings.
+                  </p>
                 </div>
 
-                <div className={`cr-kpi-card ${candidate.metrics?.total_unmet > 0 ? 'cr-kpi-crimson' : 'cr-kpi-emerald'}`}>
-                  <span className="cr-kpi-eyebrow">TOTAL PROJECTED UNMET</span>
-                  <div className="cr-kpi-value">{formatKg(candidate.metrics?.total_unmet)} <span className="cr-unit">kg</span></div>
+                <div className={`cr-kpi-card ${candidate.metrics?.total_unmet > 0 ? 'cr-kpi-alert' : 'cr-kpi-forest'}`}>
+                  <div className="cr-kpi-top">
+                    <span className="cr-kpi-eyebrow">PROJECTED SHORTAGE &amp; RISK</span>
+                    <span className={`cr-kpi-badge ${candidate.metrics?.total_unmet > 0 ? 'cr-badge-alert' : 'cr-badge-forest'}`}>
+                      {candidate.metrics?.total_unmet > 0 ? `${candidate.metrics?.elevated_districts} DISTRICTS ELEVATED` : 'ALL DEPOTS STABLE'}
+                    </span>
+                  </div>
+                  <div className="cr-kpi-value">
+                    {candidate.metrics?.total_unmet > 0 ? formatKg(candidate.metrics?.total_unmet) : '0'} <span className="cr-unit">kg unmet</span>
+                  </div>
                   <div className="cr-kpi-sub">
                     {candidate.metrics?.total_unmet > 0
-                      ? `${formatTonnes(candidate.metrics?.total_unmet)} lost service across horizon`
-                      : 'Zero unmet demand across all tiers'}
+                      ? `${formatTonnes(candidate.metrics?.total_unmet)} t lost service · ${candidate.metrics?.elevated_districts} district(s) flagged High Risk or Watch`
+                      : 'Zero unmet demand across all priority consumer tiers'}
                   </div>
-                </div>
-
-                <div className={`cr-kpi-card ${candidate.metrics?.elevated_districts > 0 ? 'cr-kpi-crimson' : 'cr-kpi-emerald'}`}>
-                  <span className="cr-kpi-eyebrow">DISTRICTS AT RISK</span>
-                  <div className="cr-kpi-value">
-                    {candidate.metrics?.elevated_districts} <span className="cr-unit">/ 6</span>
-                  </div>
-                  <div className="cr-kpi-sub">
-                    {candidate.metrics?.elevated_districts > 0
-                      ? 'Districts flagged High Risk or Watch'
-                      : 'All 6 districts stable above threshold'}
-                  </div>
-                </div>
-
-                <div className="cr-kpi-card cr-kpi-indigo">
-                  <span className="cr-kpi-eyebrow">FIRST CRITICAL LOW COVER</span>
-                  <div className="cr-kpi-value">
+                  <p className="cr-kpi-explain">
                     {candidate.districts.some((d) => d.first_low_day !== null)
-                      ? `Day ${Math.min(...candidate.districts.map((d) => d.first_low_day).filter((x) => x !== null))}`
-                      : 'None in Horizon'}
-                  </div>
-                  <div className="cr-kpi-sub">
-                    Stock below {scenario.cover_threshold} days safety buffer
-                  </div>
+                      ? `Critical stock threshold (${scenario.cover_threshold} days safety reserve) breached on Day ${Math.min(...candidate.districts.map((d) => d.first_low_day).filter((x) => x !== null))}. Dispatch intervention recommended.`
+                      : 'All district gates sustain continuous operational reserves above the minimum 2.0-day safety cover threshold.'}
+                  </p>
                 </div>
 
-                <div className="cr-kpi-card cr-kpi-emerald">
-                  <span className="cr-kpi-eyebrow">FEASIBILITY CHECKS</span>
-                  <div className="cr-kpi-value cr-text-emerald">0 VIOLATIONS</div>
-                  <div className="cr-kpi-sub">
-                    Max balance error: {candidate.checks?.max_balance_error?.toExponential(2) || '0'} kg
+                <div className="cr-kpi-card cr-kpi-verified">
+                  <div className="cr-kpi-top">
+                    <span className="cr-kpi-eyebrow">CONSERVATION &amp; SOLVER VALIDITY</span>
+                    <span className="cr-kpi-badge cr-badge-forest">STRICT MASS LAW</span>
                   </div>
+                  <div className="cr-kpi-value cr-text-forest">0 VIOLATIONS</div>
+                  <div className="cr-kpi-sub">
+                    Max numerical error: {candidate.checks?.max_balance_error?.toExponential(2) || '0'} kg · Seed #{manifest.seed}
+                  </div>
+                  <p className="cr-kpi-explain">
+                    Every kilogram accounted for under physical law: Opening Stock + External Inflow = Consumed Demand + Ending Inventory + In-Transit Mass across all 14 days.
+                  </p>
                 </div>
               </div>
             </section>
@@ -872,7 +877,7 @@ export default function Dashboard({ onBackToLanding }) {
                         <span className="cr-term-prompt">&gt;</span> {line}
                       </div>
                     ))}
-                    <div className="cr-term-line cr-term-blink">
+                    <div className="cr-term-line">
                       <span className="cr-term-prompt">&gt;</span> Ready.
                     </div>
                   </div>
@@ -944,7 +949,7 @@ export default function Dashboard({ onBackToLanding }) {
                     </div>
                   ) : (
                     <div className="cr-hud-item cr-hud-idle">
-                      <Radio size={14} className="cr-pulse-icon" />
+                      <Radio size={14} />
                       <span>
                         Live Pipeline Telemetry · Hover any node or corridor route to highlight topological flow paths · Click to inspect full dossier
                       </span>
@@ -960,16 +965,16 @@ export default function Dashboard({ onBackToLanding }) {
                     </pattern>
 
                     <marker id="arrow-nominal" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
-                      <polygon points="0 0, 7 3.5, 0 7" fill="#64748b" />
+                      <polygon points="0 0, 7 3.5, 0 7" fill="#15803d" />
                     </marker>
                     <marker id="arrow-exposed" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
-                      <polygon points="0 0, 7 3.5, 0 7" fill="#f59e0b" />
+                      <polygon points="0 0, 7 3.5, 0 7" fill="#c27a56" />
                     </marker>
                     <marker id="arrow-disrupted" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto">
                       <polygon points="0 0, 8 4, 0 8" fill="#ef4444" />
                     </marker>
                     <marker id="arrow-selected" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto">
-                      <polygon points="0 0, 8 4, 0 8" fill="#e8d1cb" />
+                      <polygon points="0 0, 8 4, 0 8" fill="#c27a56" />
                     </marker>
                   </defs>
 

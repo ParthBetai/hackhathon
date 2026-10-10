@@ -218,16 +218,6 @@ function Header({ menuOpen, setMenuOpen, onOpenDashboard, activeSection, scrollP
           })}
         </nav>
         <div className="header-actions">
-          <a
-            href="/stratum.html"
-            target="_blank"
-            rel="noreferrer"
-            className="stratum-preview-link"
-            title="Open original Stratum architectural hero page"
-          >
-            <span>Stratum Hero</span>
-            <ArrowUpRight size={13} aria-hidden="true" />
-          </a>
           <button type="button" className="dashboard-launch" onClick={onOpenDashboard}>
             <span>Launch Desk</span>
             <ArrowUpRight size={14} aria-hidden="true" />
@@ -259,7 +249,7 @@ function Header({ menuOpen, setMenuOpen, onOpenDashboard, activeSection, scrollP
           </button>
         </div>
         <div className="menu-context">
-          <span className="status-dot is-live" /> Local-first LPG supply-resilience desk
+          Local-first LPG supply-resilience desk
         </div>
         <nav>
           {navLinks.map((link, index) => (
@@ -269,11 +259,6 @@ function Header({ menuOpen, setMenuOpen, onOpenDashboard, activeSection, scrollP
               <ArrowRight size={15} aria-hidden="true" />
             </a>
           ))}
-          <a href="/stratum.html" target="_blank" rel="noreferrer" onClick={closeMenu}>
-            <span>07</span>
-            Stratum Hero Showcase
-            <ArrowUpRight size={15} aria-hidden="true" />
-          </a>
           <button
             type="button"
             className="menu-dashboard"
@@ -346,7 +331,6 @@ function LpgIndustrialCenterpiece({ activeFixture, onSelectFixture }) {
           ))}
         </div>
         <div className="centerpiece-badge">
-          <span className="status-dot is-live" />
           <span>832,220 KG BALANCED</span>
         </div>
       </div>
@@ -369,8 +353,8 @@ function LpgIndustrialCenterpiece({ activeFixture, onSelectFixture }) {
             </linearGradient>
 
             <linearGradient id="liquidGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={isShock ? '#f59e0b' : '#38bdf8'} stopOpacity="0.85" />
-              <stop offset="100%" stopColor={isShock ? '#b45309' : '#0284c7'} stopOpacity="0.95" />
+              <stop offset="0%" stopColor={isShock ? '#c27a56' : '#15803d'} stopOpacity="0.85" />
+              <stop offset="100%" stopColor={isShock ? '#8a4321' : '#0e3d27'} stopOpacity="0.95" />
             </linearGradient>
 
             <linearGradient id="towerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -382,7 +366,7 @@ function LpgIndustrialCenterpiece({ activeFixture, onSelectFixture }) {
 
             <linearGradient id="flareGrad" x1="0%" y1="100%" x2="0%" y2="0%">
               <stop offset="0%" stopColor="#ef4444" />
-              <stop offset="60%" stopColor="#f59e0b" />
+              <stop offset="60%" stopColor="#c27a56" />
               <stop offset="100%" stopColor="#fef08a" />
             </linearGradient>
 
@@ -424,7 +408,7 @@ function LpgIndustrialCenterpiece({ activeFixture, onSelectFixture }) {
             {[120, 155, 190, 225, 260, 290].map((y, idx) => (
               <g key={idx}>
                 <line x1="160" y1={y} x2="220" y2={y} stroke="rgba(255,255,255,0.22)" strokeWidth="1" />
-                <rect x="180" y={y - 8} width="20" height="6" rx="3" fill="rgba(56,189,248,0.2)" stroke="#38bdf8" strokeWidth="0.8" />
+                <rect x="180" y={y - 8} width="20" height="6" rx="3" fill="rgba(194,122,86,0.2)" stroke="#c27a56" strokeWidth="0.8" />
                 <circle cx="190" cy={y - 5} r="1.5" fill="#fef08a" className="lpg-vapor-bubble" />
               </g>
             ))}
@@ -566,7 +550,7 @@ function LpgIndustrialCenterpiece({ activeFixture, onSelectFixture }) {
             className="lpg-pipe-active"
             d="M 60 210 L 160 210"
             fill="none"
-            stroke={isShock ? '#f59e0b' : '#38bdf8'}
+            stroke={isShock ? '#c27a56' : '#15803d'}
             strokeWidth="2.5"
           />
 
@@ -576,7 +560,7 @@ function LpgIndustrialCenterpiece({ activeFixture, onSelectFixture }) {
             className="lpg-pipe-active"
             d="M 220 185 C 330 140, 380 160, 423 185"
             fill="none"
-            stroke={isShock ? '#f59e0b' : '#38bdf8'}
+            stroke={isShock ? '#c27a56' : '#15803d'}
             strokeWidth="2.5"
           />
 
@@ -586,30 +570,30 @@ function LpgIndustrialCenterpiece({ activeFixture, onSelectFixture }) {
             className="lpg-pipe-active"
             d="M 577 185 C 640 185, 700 210, 760 210"
             fill="none"
-            stroke={isOutage ? '#ef4444' : '#10b981'}
+            stroke={isOutage ? '#ef4444' : '#15803d'}
             strokeWidth="2.5"
           />
 
           {/* High-Pressure Pipeline Valves */}
           <circle cx="280" cy="168" r="5" fill="#04070d" stroke="#e8d1cb" strokeWidth="1.2" />
-          <circle cx="280" cy="168" r="2.5" fill={isShock ? '#f59e0b' : '#10b981'} />
+          <circle cx="280" cy="168" r="2.5" fill={isShock ? '#c27a56' : '#15803d'} />
 
           <circle cx="670" cy="198" r="5" fill="#04070d" stroke="#e8d1cb" strokeWidth="1.2" />
-          <circle cx="670" cy="198" r="2.5" fill={isOutage ? '#ef4444' : '#10b981'} />
+          <circle cx="670" cy="198" r="2.5" fill={isOutage ? '#ef4444' : '#15803d'} />
         </svg>
 
         {/* Floating Dossier Tooltip */}
         {activeAsset && (
           <div className="lpg-dossier-tooltip">
             <div>
-              <strong style={{ display: 'block', fontFamily: 'Chakra S', fontSize: '11px', color: '#e8d1cb', letterSpacing: '0.05em' }}>
+              <strong style={{ display: 'block', fontFamily: 'Plus Jakarta Sans', fontWeight: 700, fontSize: '11px', color: '#e8d1cb', letterSpacing: '0.05em' }}>
                 {activeAsset.title}
               </strong>
               <span style={{ fontSize: '11px', color: '#94a3b8' }}>{activeAsset.subtitle}</span>
             </div>
             <div style={{ borderLeft: '1px solid rgba(255,255,255,0.14)', paddingLeft: '14px', fontFamily: 'JetBrains Mono', fontSize: '10.5px' }}>
               <span style={{ display: 'block', color: '#e2e8f0' }}>{activeAsset.spec}</span>
-              <span style={{ color: isShock ? '#f59e0b' : '#10b981', fontWeight: 700 }}>{activeAsset.state}</span>
+              <span style={{ color: isShock ? '#c27a56' : '#15803d', fontWeight: 700 }}>{activeAsset.state}</span>
             </div>
           </div>
         )}
@@ -629,7 +613,6 @@ function HeroSection({ onOpenDashboard }) {
       <div className="container">
         <div className="hero-header-block">
           <div className="eyebrow hero-kicker">
-            <span className="status-dot is-live" />
             <span>SYNTHETIC DEMONSTRATION · LPG SUPPLY RESILIENCE</span>
           </div>
           <h1 id="hero-title" className="hero-title">
@@ -648,10 +631,6 @@ function HeroSection({ onOpenDashboard }) {
             <a className="button button-quiet" href="#approach">
               <span>Explore 14-Day Loop</span>
               <ArrowDownRight size={16} aria-hidden="true" />
-            </a>
-            <a className="button button-outline-light" href="/stratum.html" target="_blank" rel="noreferrer">
-              <span>Stratum Reference</span>
-              <ArrowUpRight size={15} aria-hidden="true" />
             </a>
           </div>
           <div className="hero-boundary">
@@ -906,9 +885,7 @@ function ImpactSection({ onOpenDashboard }) {
         </div>
         <div className="run-board">
           <div className="run-board-top">
-            <span>
-              <i className="status-dot is-live" /> RUN / IMPORT SHOCK
-            </span>
+            <span>RUN / IMPORT SHOCK</span>
             <span>DEMO-042 · CHECKED</span>
           </div>
           <div className="run-board-heading">
@@ -1234,9 +1211,7 @@ function Footer({ onOpenDashboard }) {
           <Brand />
           <p>Local-first LPG supply-resilience decision support for deterministic, reviewable scenarios.</p>
           <div className="footer-meta">
-            <span>
-              <i className="status-dot is-live" /> Built for inspection
-            </span>
+            <span>Built for inspection</span>
             <span>© 2026 CommonRoot</span>
           </div>
         </div>
@@ -1246,9 +1221,6 @@ function Footer({ onOpenDashboard }) {
             <a href="#about">Why it exists</a>
             <a href="#capabilities">Desk views</a>
             <a href="#impact">Run evidence</a>
-            <a href="/stratum.html" target="_blank" rel="noreferrer">
-              Stratum Showcase
-            </a>
           </div>
           <div>
             <span className="eyebrow">Use the desk</span>
