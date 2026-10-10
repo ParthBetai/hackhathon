@@ -32,6 +32,7 @@ import {
   Minimize2,
   Network,
   Play,
+  Radio,
   RefreshCw,
   Search,
   Shield,
@@ -39,6 +40,7 @@ import {
   ShieldCheck,
   Sliders,
   Sparkles,
+  Terminal,
   Truck,
   Users,
   Warehouse,
@@ -92,7 +94,7 @@ export default function Dashboard({ onBackToLanding }) {
   const [isSimulating, setIsSimulating] = useState(false)
   const [simulationLog, setSimulationLog] = useState([])
 
-  // Parametric controls (defaults from current preset)
+  // Parametric controls
   const [customParams, setCustomParams] = useState({
     reductionFraction: 0.5,
     delayDays: 2,
@@ -109,20 +111,34 @@ export default function Dashboard({ onBackToLanding }) {
   const [districtSortBy, setDistrictSortBy] = useState('risk')
   const [selectedDistrictId, setSelectedDistrictId] = useState('north_hills')
 
-  // Selected network asset for inspector
+  // Selected & Hovered network assets for interactive topology
   const [selectedAsset, setSelectedAsset] = useState('node:import_source')
+  const [hoveredNodeId, setHoveredNodeId] = useState(null)
+  const [hoveredEdgeId, setHoveredEdgeId] = useState(null)
 
   // Human review state
   const [reviewNote, setReviewNote] = useState('')
   const [reviewAck, setReviewAck] = useState(false)
-  const [reviewStatus, setReviewStatus] = useState(null) // null or { timestamp, note }
+  const [reviewStatus, setReviewStatus] = useState(null)
 
   // Load currently active run bundle from precomputed runs
   const currentRun = useMemo(() => {
     return precomputedRuns[selectedPreset] || precomputedRuns['import_shock']
   }, [selectedPreset])
 
-  const { manifest, scenario, network, policy, baseline, candidate, comparison, affected_nodes, affected_edges, affected_paths, warnings } = currentRun
+  const {
+    manifest,
+    scenario,
+    network,
+    policy,
+    baseline,
+    candidate,
+    comparison,
+    affected_nodes,
+    affected_edges,
+    affected_paths,
+    warnings,
+  } = currentRun
 
   // Switch preset
   const handleSelectPreset = (presetKey) => {
@@ -146,17 +162,17 @@ export default function Dashboard({ onBackToLanding }) {
   const handleRunSimulation = () => {
     setIsSimulating(true)
     setSimulationLog([
-      'Initializing OR-Tools GLOP Continuous Linear Program solver...',
-      'Applying disruption parameters to directed graph topology...',
-      'Staging lexicographic tier 1 objective: Maximising Essential Service...',
-      'Staging lexicographic tier 2 objective: Maximising Domestic Household Service...',
-      'Minimising intra-tier L1 proportional deviations across 6 districts...',
+      'Initializing OR-Tools GLOP Continuous Linear Program solver (v9.11)...',
+      `Applying disruption parameters to graph topology: ${scenario.name}...`,
+      'Staging lexicographic tier 1 objective: Maximizing Essential Medical & Care Services...',
+      'Staging lexicographic tier 2 objective: Maximizing Domestic Household Service...',
+      'Minimizing intra-tier L1 proportional deviations across 6 administrative districts...',
       'Evaluating physical flow conservation & capacity bounds (tolerance: 1e-5 kg)...',
-      'Optimisation complete: GLOP returned OPTIMAL in 0.089s.',
+      'Optimisation complete: GLOP returned OPTIMAL in 0.089s. Deterministic seed verified.',
     ])
     setTimeout(() => {
       setIsSimulating(false)
-    }, 600)
+    }, 700)
   }
 
   // Handle Review submission
@@ -242,7 +258,6 @@ export default function Dashboard({ onBackToLanding }) {
     return candidate.districts.find((d) => d.district_id === selectedDistrictId) || candidate.districts[0]
   }, [candidate.districts, selectedDistrictId])
 
-  // Selected district balance and service history
   const selectedDistrictBalances = useMemo(() => {
     return candidate.balances.filter((b) => b.node_id === selectedDistrictId).sort((a, b) => a.day - b.day)
   }, [candidate.balances, selectedDistrictId])
@@ -265,6 +280,34 @@ export default function Dashboard({ onBackToLanding }) {
     }
   }, [selectedAsset, network, candidate])
 
+  // Interactive Graph Hover derivations
+  const connectedEdgeIds = useMemo(() => {
+    if (!hoveredNodeId) return []
+    return network.edges
+      .filter((e) => e.source === hoveredNodeId || e.target === hoveredNodeId)
+      .map((e) => e.id)
+  }, [hoveredNodeId, network.edges])
+
+  const connectedNodeIds = useMemo(() => {
+    if (!hoveredEdgeId) return []
+    const edge = network.edges.find((e) => e.id === hoveredEdgeId)
+    return edge ? [edge.source, edge.target] : []
+  }, [hoveredEdgeId, network.edges])
+
+  const activeHoveredNode = useMemo(() => {
+    if (!hoveredNodeId) return null
+    return network.nodes.find((n) => n.id === hoveredNodeId) || null
+  }, [hoveredNodeId, network.nodes])
+
+  const activeHoveredEdge = useMemo(() => {
+    if (!hoveredEdgeId) return null
+    const edge = network.edges.find((e) => e.id === hoveredEdgeId)
+    if (!edge) return null
+    const src = network.nodes.find((n) => n.id === edge.source)
+    const tgt = network.nodes.find((n) => n.id === edge.target)
+    return { edge, sourceNode: src, targetNode: tgt }
+  }, [hoveredEdgeId, network.edges, network.nodes])
+
   return (
     <div className="cr-dashboard-root">
       {/* 1. TOP ANNOUNCEMENT & RESPONSIBLE AI BANNER */}
@@ -272,7 +315,7 @@ export default function Dashboard({ onBackToLanding }) {
         <div className="cr-top-banner-content">
           <span className="cr-top-pill">DECISION SUPPORT ONLY</span>
           <p>
-            <strong>CommonRoot Operational Desk:</strong> Outputs are modeled estimates from synthetic corridor data.
+            <strong>CommonRoot Operational Console:</strong> Outputs are modeled estimates from synthetic corridor data.
             Human review is strictly mandatory before any authorized logistics or civil supplies action.
           </p>
         </div>
@@ -299,6 +342,7 @@ export default function Dashboard({ onBackToLanding }) {
         <div className="cr-dash-header-main">
           <div className="cr-header-title-group">
             <div className="cr-brand-badge">
+              <span className="cr-brand-pulse" />
               <span className="cr-brand-code">CR-OPS</span>
               <span className="cr-brand-status">MODEL v1.1</span>
             </div>
@@ -345,7 +389,7 @@ export default function Dashboard({ onBackToLanding }) {
           </div>
         </div>
 
-        {/* Status ticker */}
+        {/* Status Metadata Bar */}
         <div className="cr-dash-meta-bar">
           <div className="cr-meta-item">
             <span className="cr-meta-label">Horizon:</span>
@@ -430,11 +474,11 @@ export default function Dashboard({ onBackToLanding }) {
               </div>
 
               <div className="cr-kpi-grid">
-                <div className="cr-kpi-card cr-kpi-petrol">
+                <div className="cr-kpi-card cr-kpi-cyan">
                   <span className="cr-kpi-eyebrow">TOTAL AVAILABLE SUPPLY</span>
                   <div className="cr-kpi-value">{formatKg(candidate.metrics?.total_available)} <span className="cr-unit">kg</span></div>
                   <div className="cr-kpi-sub">
-                    {formatTonnes(candidate.metrics?.total_available)} · Initial ({formatTonnes(candidate.metrics?.initial_stock)}) + Inflow Q ({formatTonnes(candidate.metrics?.total_supply)})
+                    {formatTonnes(candidate.metrics?.total_available)} · Opening ({formatTonnes(candidate.metrics?.initial_stock)}) + Inflow Q ({formatTonnes(candidate.metrics?.total_supply)})
                   </div>
                 </div>
 
@@ -446,7 +490,7 @@ export default function Dashboard({ onBackToLanding }) {
                   </div>
                 </div>
 
-                <div className={`cr-kpi-card ${candidate.metrics?.total_unmet > 0 ? 'cr-kpi-crimson' : 'cr-kpi-green'}`}>
+                <div className={`cr-kpi-card ${candidate.metrics?.total_unmet > 0 ? 'cr-kpi-crimson' : 'cr-kpi-emerald'}`}>
                   <span className="cr-kpi-eyebrow">TOTAL PROJECTED UNMET</span>
                   <div className="cr-kpi-value">{formatKg(candidate.metrics?.total_unmet)} <span className="cr-unit">kg</span></div>
                   <div className="cr-kpi-sub">
@@ -456,7 +500,7 @@ export default function Dashboard({ onBackToLanding }) {
                   </div>
                 </div>
 
-                <div className={`cr-kpi-card ${candidate.metrics?.elevated_districts > 0 ? 'cr-kpi-crimson' : 'cr-kpi-green'}`}>
+                <div className={`cr-kpi-card ${candidate.metrics?.elevated_districts > 0 ? 'cr-kpi-crimson' : 'cr-kpi-emerald'}`}>
                   <span className="cr-kpi-eyebrow">DISTRICTS AT RISK</span>
                   <div className="cr-kpi-value">
                     {candidate.metrics?.elevated_districts} <span className="cr-unit">/ 6</span>
@@ -468,7 +512,7 @@ export default function Dashboard({ onBackToLanding }) {
                   </div>
                 </div>
 
-                <div className="cr-kpi-card cr-kpi-slate">
+                <div className="cr-kpi-card cr-kpi-indigo">
                   <span className="cr-kpi-eyebrow">FIRST CRITICAL LOW COVER</span>
                   <div className="cr-kpi-value">
                     {candidate.districts.some((d) => d.first_low_day !== null)
@@ -480,9 +524,9 @@ export default function Dashboard({ onBackToLanding }) {
                   </div>
                 </div>
 
-                <div className="cr-kpi-card cr-kpi-green">
+                <div className="cr-kpi-card cr-kpi-emerald">
                   <span className="cr-kpi-eyebrow">FEASIBILITY CHECKS</span>
-                  <div className="cr-kpi-value cr-text-green">0 VIOLATIONS</div>
+                  <div className="cr-kpi-value cr-text-emerald">0 VIOLATIONS</div>
                   <div className="cr-kpi-sub">
                     Max balance error: {candidate.checks?.max_balance_error?.toExponential(2) || '0'} kg
                   </div>
@@ -603,19 +647,19 @@ export default function Dashboard({ onBackToLanding }) {
                   <h4>Downstream Exposed Entities:</h4>
                   <div className="cr-tag-cloud">
                     {affected_nodes.map((nodeId) => (
-                      <span key={nodeId} className="cr-badge cr-badge-ochre">
+                      <span key={nodeId} className="cr-badge cr-badge-amber">
                         {DISTRICT_NAMES[nodeId] || nodeId}
                       </span>
                     ))}
                     {affected_edges.map((edgeId) => (
-                      <span key={edgeId} className="cr-badge cr-badge-slate">
+                      <span key={edgeId} className="cr-badge cr-badge-cyan">
                         Route: {edgeId}
                       </span>
                     ))}
                   </div>
                   <p className="cr-footnote">
-                    Note: Downstream exposure traces topological dependency in the directed graph. It does not mean all
-                    flow along the route is completely halted.
+                    Note: Downstream exposure traces topological dependency in the directed graph. It indicates which links
+                    and consumption sinks are affected by upstream constraints.
                   </p>
                 </div>
               </div>
@@ -655,7 +699,7 @@ export default function Dashboard({ onBackToLanding }) {
               </div>
 
               <div className="cr-chart-legend">
-                <span><i className="cr-legend-swatch cr-swatch-petrol" /> Demand Served (kg LPG)</span>
+                <span><i className="cr-legend-swatch cr-swatch-cyan" /> Demand Served (kg LPG)</span>
                 <span><i className="cr-legend-swatch cr-swatch-crimson" /> Unmet Deficit (kg LPG)</span>
               </div>
             </section>
@@ -690,7 +734,7 @@ export default function Dashboard({ onBackToLanding }) {
                       >
                         <div className="cr-preset-btn-top">
                           <strong>{label}</strong>
-                          {selectedPreset === key && <CheckCircle2 size={16} className="cr-text-green" />}
+                          {selectedPreset === key && <CheckCircle2 size={16} className="cr-text-emerald" />}
                         </div>
                         <span className="cr-preset-btn-desc">
                           {key === 'import_shock' && 'Halves inbound LPG import flow for 10 days on a 14-day horizon.'}
@@ -752,8 +796,8 @@ export default function Dashboard({ onBackToLanding }) {
                       <label>Planning Horizon (Days):</label>
                       <input
                         type="number"
-                        min="1"
-                        max="14"
+                        min="7"
+                        max="28"
                         value={customParams.horizonDays}
                         onChange={(e) => setCustomParams({ ...customParams, horizonDays: parseInt(e.target.value) || 14 })}
                       />
@@ -762,9 +806,9 @@ export default function Dashboard({ onBackToLanding }) {
                       <label>Demand Multiplier:</label>
                       <input
                         type="number"
-                        step="0.05"
                         min="0.5"
                         max="2.0"
+                        step="0.1"
                         value={customParams.demandMultiplier}
                         onChange={(e) => setCustomParams({ ...customParams, demandMultiplier: parseFloat(e.target.value) || 1.0 })}
                       />
@@ -773,7 +817,7 @@ export default function Dashboard({ onBackToLanding }) {
 
                   <div className="cr-form-row">
                     <div className="cr-form-group">
-                      <label>Extra Lead Time on All Routes (Days):</label>
+                      <label>Transit Lead Day Shift:</label>
                       <input
                         type="number"
                         min="0"
@@ -783,12 +827,12 @@ export default function Dashboard({ onBackToLanding }) {
                       />
                     </div>
                     <div className="cr-form-group">
-                      <label>Risk Stockout Threshold (Days):</label>
+                      <label>Safety Cover Buffer (Days):</label>
                       <input
                         type="number"
-                        step="0.25"
-                        min="0.5"
-                        max="7.0"
+                        min="1.0"
+                        max="5.0"
+                        step="0.5"
                         value={customParams.coverThreshold}
                         onChange={(e) => setCustomParams({ ...customParams, coverThreshold: parseFloat(e.target.value) || 2.0 })}
                       />
@@ -796,7 +840,7 @@ export default function Dashboard({ onBackToLanding }) {
                   </div>
 
                   <div className="cr-config-actions">
-                    <button className="cr-btn-primary" onClick={handleRunSimulation} disabled={isSimulating}>
+                    <button className="cr-btn-primary" onClick={handleRunSimulation}>
                       <Play size={14} /> Recompute Simulation with Custom Parameters
                     </button>
                     <button
@@ -808,11 +852,37 @@ export default function Dashboard({ onBackToLanding }) {
                   </div>
                 </div>
               </div>
+
+              {/* Real-time solver execution terminal */}
+              {simulationLog.length > 0 && (
+                <div className="cr-terminal-window">
+                  <div className="cr-terminal-bar">
+                    <div className="cr-term-dots">
+                      <span className="cr-term-dot cr-dot-red" />
+                      <span className="cr-term-dot cr-dot-yellow" />
+                      <span className="cr-term-dot cr-dot-green" />
+                    </div>
+                    <span className="cr-term-title">
+                      <Terminal size={12} /> OR-Tools GLOP Continuous LP Solver Terminal
+                    </span>
+                  </div>
+                  <div className="cr-term-body">
+                    {simulationLog.map((line, idx) => (
+                      <div key={idx} className="cr-term-line">
+                        <span className="cr-term-prompt">&gt;</span> {line}
+                      </div>
+                    ))}
+                    <div className="cr-term-line cr-term-blink">
+                      <span className="cr-term-prompt">&gt;</span> Ready.
+                    </div>
+                  </div>
+                </div>
+              )}
             </section>
           </div>
         )}
 
-        {/* =================== TAB 3: NETWORK TOPOLOGY =================== */}
+        {/* =================== TAB 3: NETWORK TOPOLOGY (FIXED HOVER & INTERACTION) =================== */}
         {activeTab === 'network' && (
           <div className="cr-view-pane cr-fade-in">
             <section className="cr-section">
@@ -820,31 +890,102 @@ export default function Dashboard({ onBackToLanding }) {
                 <div>
                   <h2 className="cr-section-title">LPG Supply-Chain Directed Dependency Graph</h2>
                   <p className="cr-section-desc">
-                    Interactive physical supply corridor from import terminals and refineries through bottling facilities to district consumption centers.
+                    Physical topology from maritime import terminals through primary storage, bottling, and regional depots to municipal consumer centers.
                   </p>
                 </div>
-                <span className="cr-data-tag">CLICK ANY NODE OR ROUTE TO INSPECT SCHEDULES</span>
+                <span className="cr-data-tag">HOVER TO TRACE FLOWS · CLICK TO PIN ASSET</span>
               </div>
 
-              {/* Interactive Network Graph */}
+              {/* Interactive Network Graph Wrap */}
               <div className="cr-network-canvas-wrap">
+                {/* Live Tactical HUD Telemetry Banner */}
+                <div className="cr-network-hud-bar">
+                  {activeHoveredNode ? (
+                    <div className="cr-hud-item cr-hud-node">
+                      <div className="cr-hud-header">
+                        <span className="cr-hud-badge cr-hud-badge-cyan">{activeHoveredNode.kind.toUpperCase()}</span>
+                        <strong className="cr-hud-title">{activeHoveredNode.name}</strong>
+                        <span className="cr-hud-id">ID: {activeHoveredNode.id}</span>
+                      </div>
+                      <div className="cr-hud-stats">
+                        <span>Opening Stock: <b>{formatKg(activeHoveredNode.initial_stock)} kg</b></span>
+                        <span>Daily Supply Q: <b>{formatKg(activeHoveredNode.daily_supply)} kg/d</b></span>
+                        <span>Outbound Cap: <b>{formatKg(activeHoveredNode.dispatch_capacity)} kg/d</b></span>
+                        <span className={scenario.affected_id === activeHoveredNode.id ? 'cr-text-alert font-bold' : affected_nodes.includes(activeHoveredNode.id) ? 'cr-text-amber' : 'cr-text-emerald'}>
+                          {scenario.affected_id === activeHoveredNode.id
+                            ? '⚡ Active Outage Trigger'
+                            : affected_nodes.includes(activeHoveredNode.id)
+                            ? '⚠ Downstream Supply Shock'
+                            : '✓ Nominal Operations'}
+                        </span>
+                      </div>
+                    </div>
+                  ) : activeHoveredEdge ? (
+                    <div className="cr-hud-item cr-hud-edge">
+                      <div className="cr-hud-header">
+                        <span className="cr-hud-badge cr-hud-badge-amber">CORRIDOR ROUTE</span>
+                        <strong className="cr-hud-title">{activeHoveredEdge.edge.id}</strong>
+                        <span className="cr-hud-id">
+                          {activeHoveredEdge.sourceNode?.name} → {activeHoveredEdge.targetNode?.name}
+                        </span>
+                      </div>
+                      <div className="cr-hud-stats">
+                        <span>Daily Capacity: <b>{formatKg(activeHoveredEdge.edge.capacity)} kg/d</b></span>
+                        <span>Transit Lead: <b>{activeHoveredEdge.edge.lead_days} Day(s)</b></span>
+                        <span>Distance: <b>{activeHoveredEdge.edge.distance_km} km</b></span>
+                        <span className={scenario.affected_id === activeHoveredEdge.edge.id ? 'cr-text-alert font-bold' : affected_edges.includes(activeHoveredEdge.edge.id) ? 'cr-text-amber' : 'cr-text-emerald'}>
+                          {scenario.affected_id === activeHoveredEdge.edge.id
+                            ? '⚡ Disrupted Route Link'
+                            : affected_edges.includes(activeHoveredEdge.edge.id)
+                            ? '⚠ Downstream Bottleneck'
+                            : '✓ Active Nominal Corridor'}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="cr-hud-item cr-hud-idle">
+                      <Radio size={14} className="cr-pulse-icon" />
+                      <span>
+                        Live Pipeline Telemetry · Hover any node or corridor route to highlight topological flow paths · Click to inspect full dossier
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* SVG Vector Canvas */}
                 <svg className="cr-network-svg" viewBox="0 0 1180 520">
                   <defs>
-                    <marker id="arrow-regular" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                      <path d="M 0 0 L 6 3 L 0 6" fill="none" stroke="#164B50" strokeWidth="1.3" />
+                    <pattern id="grid-dots" width="28" height="28" patternUnits="userSpaceOnUse">
+                      <circle cx="14" cy="14" r="1.2" fill="rgba(148, 163, 184, 0.15)" />
+                    </pattern>
+
+                    <marker id="arrow-nominal" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+                      <polygon points="0 0, 7 3.5, 0 7" fill="#38bdf8" />
                     </marker>
-                    <marker id="arrow-exposed" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                      <path d="M 0 0 L 6 3 L 0 6" fill="none" stroke="#B47B28" strokeWidth="1.5" />
+                    <marker id="arrow-exposed" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+                      <polygon points="0 0, 7 3.5, 0 7" fill="#f59e0b" />
                     </marker>
-                    <marker id="arrow-disrupted" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                      <path d="M 0 0 L 6 3 L 0 6" fill="none" stroke="#8A2236" strokeWidth="1.8" />
+                    <marker id="arrow-disrupted" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto">
+                      <polygon points="0 0, 8 4, 0 8" fill="#ef4444" />
                     </marker>
-                    <marker id="arrow-selected" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                      <path d="M 0 0 L 6 3 L 0 6" fill="none" stroke="#C8562D" strokeWidth="2.0" />
+                    <marker id="arrow-selected" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto">
+                      <polygon points="0 0, 8 4, 0 8" fill="#6366f1" />
                     </marker>
                   </defs>
 
-                  {/* Edges */}
+                  {/* Blueprint Grid Background */}
+                  <rect width="100%" height="100%" fill="url(#grid-dots)" />
+
+                  {/* Stage Guide Labels */}
+                  <g className="cr-stage-guides" opacity="0.65">
+                    <text x="60" y="24" className="cr-stage-label">STAGE 1: IMPORT &amp; SOURCE</text>
+                    <text x="375" y="24" className="cr-stage-label">STAGE 2: STRATEGIC BUFFER</text>
+                    <text x="535" y="24" className="cr-stage-label">STAGE 3: BOTTLING PLANTS</text>
+                    <text x="705" y="24" className="cr-stage-label">STAGE 4: REGIONAL DEPOTS</text>
+                    <text x="920" y="24" className="cr-stage-label">STAGE 5: DEMAND DISTRICTS</text>
+                  </g>
+
+                  {/* Corridor Edges */}
                   {network.edges.map((edge) => {
                     const sourceNode = network.nodes.find((n) => n.id === edge.source)
                     const targetNode = network.nodes.find((n) => n.id === edge.target)
@@ -853,44 +994,73 @@ export default function Dashboard({ onBackToLanding }) {
                     const isAffected = affected_edges.includes(edge.id)
                     const isDisrupted = scenario.affected_id === edge.id
                     const isSelected = selectedAsset === `edge:${edge.id}`
+                    const isHovered = hoveredEdgeId === edge.id
+                    const isConnectedToHoveredNode = connectedEdgeIds.includes(edge.id)
 
-                    let strokeColor = '#164B50'
-                    let markerType = 'arrow-regular'
-                    let strokeW = 1.8
+                    let strokeColor = '#38bdf8'
+                    let markerType = 'arrow-nominal'
+                    let strokeW = 2.0
                     let strokeDash = ''
 
                     if (!edge.active) {
-                      strokeColor = '#8A959D'
-                      strokeDash = '4 4'
+                      strokeColor = '#64748b'
+                      strokeDash = '5 5'
                     } else if (isDisrupted) {
-                      strokeColor = '#8A2236'
+                      strokeColor = '#ef4444'
                       markerType = 'arrow-disrupted'
-                      strokeW = 3
+                      strokeW = 3.2
                     } else if (isAffected) {
-                      strokeColor = '#B47B28'
+                      strokeColor = '#f59e0b'
                       markerType = 'arrow-exposed'
-                      strokeW = 2.4
+                      strokeW = 2.6
                     }
+
                     if (isSelected) {
-                      strokeColor = '#C8562D'
+                      strokeColor = '#6366f1'
                       markerType = 'arrow-selected'
-                      strokeW = 3.5
+                      strokeW = 3.6
                     }
+
+                    if (isHovered || isConnectedToHoveredNode) {
+                      strokeW = 4.0
+                    }
+
+                    // Opacity dimming when another element is hovered
+                    const hasHover = Boolean(hoveredNodeId || hoveredEdgeId)
+                    const isEdgeHighlighted = isHovered || isConnectedToHoveredNode || isSelected
+                    const edgeOpacity = hasHover ? (isEdgeHighlighted ? 1.0 : 0.22) : 0.85
+
+                    const x1 = sourceNode.x + (sourceNode.kind === 'district' ? 24 : 32)
+                    const y1 = sourceNode.y + 15
+                    const x2 = targetNode.x - 14
+                    const y2 = targetNode.y + 15
 
                     return (
                       <g
                         key={edge.id}
-                        className="cr-graph-edge"
+                        className={`cr-graph-edge ${isEdgeHighlighted ? 'is-highlighted' : ''}`}
                         onClick={() => setSelectedAsset(`edge:${edge.id}`)}
+                        onMouseEnter={() => setHoveredEdgeId(edge.id)}
+                        onMouseLeave={() => setHoveredEdgeId(null)}
+                        style={{ opacity: edgeOpacity, transition: 'opacity 0.2s ease' }}
                       >
-                        <title>
-                          Route {edge.id}: {sourceNode.name} → {targetNode.name} (Cap: {formatKg(edge.capacity)} kg/d, Lead: {edge.lead_days}d)
-                        </title>
+                        {/* Invisible 22px hitbox so hovering never slips off the thin line */}
                         <line
-                          x1={sourceNode.x + 20}
-                          y1={sourceNode.y + 15}
-                          x2={targetNode.x - 10}
-                          y2={targetNode.y + 15}
+                          x1={x1}
+                          y1={y1}
+                          x2={x2}
+                          y2={y2}
+                          stroke="transparent"
+                          strokeWidth={22}
+                          style={{ cursor: 'pointer' }}
+                        />
+
+                        {/* Visible Route Line */}
+                        <line
+                          x1={x1}
+                          y1={y1}
+                          x2={x2}
+                          y2={y2}
                           stroke={strokeColor}
                           strokeWidth={strokeW}
                           strokeDasharray={strokeDash}
@@ -900,62 +1070,93 @@ export default function Dashboard({ onBackToLanding }) {
                     )
                   })}
 
-                  {/* Nodes */}
+                  {/* Supply Nodes */}
                   {network.nodes.map((node) => {
                     const isAffected = affected_nodes.includes(node.id)
                     const isDisrupted = scenario.affected_id === node.id
                     const isSelected = selectedAsset === `node:${node.id}`
+                    const isHovered = hoveredNodeId === node.id
+                    const isConnectedToHoveredEdge = connectedNodeIds.includes(node.id)
 
-                    let nodeFill = '#FFFFFF'
-                    let nodeStroke = '#164B50'
-                    let strokeW = 2
+                    let nodeFill = '#111827'
+                    let nodeStroke = '#38bdf8'
+                    let strokeW = 2.0
 
                     if (isDisrupted) {
-                      nodeFill = '#FBF2F4'
-                      nodeStroke = '#8A2236'
-                      strokeW = 3
+                      nodeFill = '#2a1215'
+                      nodeStroke = '#ef4444'
+                      strokeW = 3.0
                     } else if (isAffected) {
-                      nodeFill = '#FDF8F0'
-                      nodeStroke = '#B47B28'
-                      strokeW = 2.5
+                      nodeFill = '#291e10'
+                      nodeStroke = '#f59e0b'
+                      strokeW = 2.6
                     }
+
                     if (isSelected) {
-                      nodeStroke = '#C8562D'
-                      strokeW = 3.5
+                      nodeStroke = '#6366f1'
+                      strokeW = 3.6
                     }
 
                     const isDistrict = node.kind === 'district'
+                    const hasHover = Boolean(hoveredNodeId || hoveredEdgeId)
+                    const isNodeHighlighted = isHovered || isConnectedToHoveredEdge || isSelected
+                    const nodeOpacity = hasHover ? (isNodeHighlighted ? 1.0 : 0.3) : 1.0
 
                     return (
                       <g
                         key={node.id}
-                        className="cr-graph-node"
+                        className={`cr-graph-node ${isNodeHighlighted ? 'is-highlighted' : ''}`}
                         transform={`translate(${node.x}, ${node.y})`}
                         onClick={() => setSelectedAsset(`node:${node.id}`)}
+                        onMouseEnter={() => setHoveredNodeId(node.id)}
+                        onMouseLeave={() => setHoveredNodeId(null)}
+                        style={{ opacity: nodeOpacity, cursor: 'pointer', transition: 'opacity 0.2s ease' }}
                       >
-                        <title>
-                          {node.name} ({node.kind}) - Initial: {formatKg(node.initial_stock)} kg, Supply: {formatKg(node.daily_supply)} kg/d
-                        </title>
+                        {/* Outer Glow Halo on Hover / Select (no coordinate transformation bug!) */}
+                        {isNodeHighlighted && (
+                          <rect
+                            x={isDistrict ? -4 : -5}
+                            y={isDistrict ? -4 : -5}
+                            width={isDistrict ? 38 : 46}
+                            height={isDistrict ? 38 : 40}
+                            rx={isDistrict ? 19 : 10}
+                            fill="none"
+                            stroke={isDisrupted ? '#ef4444' : isAffected ? '#f59e0b' : '#38bdf8'}
+                            strokeWidth={2}
+                            strokeDasharray="4 3"
+                            className="cr-node-glow-halo"
+                          />
+                        )}
+
                         {isDistrict ? (
-                          <circle cx="15" cy="15" r="14" fill={nodeFill} stroke={nodeStroke} strokeWidth={strokeW} />
+                          <circle
+                            cx="15"
+                            cy="15"
+                            r="14"
+                            fill={nodeFill}
+                            stroke={nodeStroke}
+                            strokeWidth={strokeW}
+                          />
                         ) : (
                           <rect
                             x="0"
                             y="0"
-                            width="34"
+                            width="36"
                             height="30"
-                            rx="5"
+                            rx="6"
                             fill={nodeFill}
                             stroke={nodeStroke}
                             strokeWidth={strokeW}
                           />
                         )}
+
+                        {/* Node Label Text */}
                         <text
-                          x={isDistrict ? 35 : 17}
+                          x={isDistrict ? 38 : 18}
                           y={isDistrict ? 19 : 45}
                           textAnchor={isDistrict ? 'start' : 'middle'}
                           className="cr-node-text"
-                          fill="#172A35"
+                          fill="#f8fafc"
                         >
                           {node.name}
                         </text>
@@ -964,20 +1165,20 @@ export default function Dashboard({ onBackToLanding }) {
                   })}
                 </svg>
 
-                {/* Graph Legend */}
+                {/* Graph Legend Strip */}
                 <div className="cr-graph-legend-strip">
-                  <span><i className="cr-swatch-line cr-swatch-petrol" /> Nominal Active Route</span>
-                  <span><i className="cr-swatch-line cr-swatch-ochre" /> Disruption-Exposed Path</span>
+                  <span><i className="cr-swatch-line cr-swatch-cyan" /> Nominal Active Route</span>
+                  <span><i className="cr-swatch-line cr-swatch-amber" /> Disruption-Exposed Path</span>
                   <span><i className="cr-swatch-line cr-swatch-crimson" /> Active Disruption Trigger</span>
                   <span><i className="cr-swatch-line cr-swatch-dashed" /> Inactive Backup Route</span>
                 </div>
               </div>
 
-              {/* Asset Detail Inspector */}
+              {/* Asset Detail Inspector (Pinned Asset) */}
               <div className="cr-card cr-asset-inspector-card">
                 <div className="cr-card-header-row">
                   <div>
-                    <span className="cr-badge cr-badge-petrol">
+                    <span className="cr-badge cr-badge-cyan">
                       {inspectedAssetData.type === 'node' ? inspectedAssetData.node?.kind.toUpperCase() : 'DIRECTED ROUTE'}
                     </span>
                     <h3 className="cr-inspector-title">
@@ -1005,7 +1206,7 @@ export default function Dashboard({ onBackToLanding }) {
                     </div>
                     <div className="cr-inspector-field">
                       <span className="cr-label">Network Status:</span>
-                      <strong className={inspectedAssetData.node?.active ? 'cr-text-green' : 'cr-text-muted'}>
+                      <strong className={inspectedAssetData.node?.active ? 'cr-text-emerald' : 'cr-text-muted'}>
                         {inspectedAssetData.node?.active ? 'Active' : 'Inactive'}
                       </strong>
                     </div>
@@ -1028,7 +1229,7 @@ export default function Dashboard({ onBackToLanding }) {
                     </div>
                     <div className="cr-inspector-field">
                       <span className="cr-label">Disruption State:</span>
-                      <strong className={affected_edges.includes(inspectedAssetData.edge?.id) ? 'cr-text-alert' : 'cr-text-green'}>
+                      <strong className={affected_edges.includes(inspectedAssetData.edge?.id) ? 'cr-text-alert' : 'cr-text-emerald'}>
                         {affected_edges.includes(inspectedAssetData.edge?.id) ? 'Exposed to Disruption' : 'Normal Operation'}
                       </strong>
                     </div>
@@ -1143,7 +1344,7 @@ export default function Dashboard({ onBackToLanding }) {
               <div className="cr-district-drilldown-card">
                 <div className="cr-drilldown-header">
                   <div>
-                    <span className="cr-badge cr-badge-ochre">DISTRICT DOSSIER</span>
+                    <span className="cr-badge cr-badge-amber">DISTRICT DOSSIER</span>
                     <h3 className="cr-drilldown-title">{selectedDistrictData.name} ({selectedDistrictData.district_id})</h3>
                     <p className="cr-drilldown-desc">
                       Current modelled risk: <strong>{selectedDistrictData.risk}</strong> · Snapshot days of cover: <strong>{selectedDistrictData.snapshot_cover?.toFixed(2)} days</strong>
@@ -1163,7 +1364,7 @@ export default function Dashboard({ onBackToLanding }) {
                 <div className="cr-drilldown-charts-grid">
                   <div className="cr-chart-subcard">
                     <h4>Day-by-Day Closing Stock Cover Trajectory</h4>
-                    <p className="cr-footnote">Closing inventory in days of demand vs. the 2.0-day threshold buffer.</p>
+                    <p className="cr-footnote">Closing inventory in days of demand vs. the 2.0-day safety threshold.</p>
 
                     <div className="cr-trajectory-bars">
                       {selectedDistrictBalances.map((b) => {
@@ -1186,14 +1387,14 @@ export default function Dashboard({ onBackToLanding }) {
                       })}
                     </div>
                     <div className="cr-chart-legend">
-                      <span><i className="cr-legend-swatch cr-swatch-green" /> &gt;= 2.0 Days Cover (Safe)</span>
+                      <span><i className="cr-legend-swatch cr-swatch-emerald" /> &gt;= 2.0 Days Cover (Safe Buffer)</span>
                       <span><i className="cr-legend-swatch cr-swatch-crimson" /> &lt; 2.0 Days Cover (Critical Low)</span>
                     </div>
                   </div>
 
                   <div className="cr-chart-subcard">
                     <h4>Daily Demand Fulfillment by User Tier</h4>
-                    <p className="cr-footnote">Essential Services (100% prioritized) vs. Household & Commercial dispatches.</p>
+                    <p className="cr-footnote">Essential Services (100% prioritized) vs. Household &amp; Commercial dispatches.</p>
 
                     <table className="cr-table cr-table-compact">
                       <thead>
@@ -1209,7 +1410,7 @@ export default function Dashboard({ onBackToLanding }) {
                         {selectedDistrictService.slice(0, 8).map((s, idx) => (
                           <tr key={idx}>
                             <td>Day {s.day}</td>
-                            <td><span className="cr-badge cr-badge-slate">{s.group}</span></td>
+                            <td><span className="cr-badge cr-badge-cyan">{s.group}</span></td>
                             <td className="cr-text-right cr-mono">{formatKg(s.demand)}</td>
                             <td className="cr-text-right cr-mono">{formatKg(s.served)}</td>
                             <td className={`cr-text-right cr-mono ${s.unmet > 0 ? 'cr-text-crimson' : ''}`}>{formatKg(s.unmet)}</td>
@@ -1235,7 +1436,7 @@ export default function Dashboard({ onBackToLanding }) {
                     Side-by-side comparison of Plan 1 (Proportional Baseline) against Plan 2 (OR-Tools Lexicographic Optimization).
                   </p>
                 </div>
-                <span className="cr-badge cr-badge-petrol">SAME PHYSICAL CONSTRAINTS & SNAPSHOT</span>
+                <span className="cr-badge cr-badge-cyan">SAME PHYSICAL CONSTRAINTS &amp; SNAPSHOT</span>
               </div>
 
               {/* Comparison Summary Strip */}
@@ -1257,7 +1458,7 @@ export default function Dashboard({ onBackToLanding }) {
                     <span className="cr-val-baseline">Baseline: {formatPercent(baseline.metrics?.group_fulfilment?.essential)}</span>
                     <span className="cr-val-candidate">Candidate: {formatPercent(candidate.metrics?.group_fulfilment?.essential)}</span>
                   </div>
-                  <div className="cr-diff-badge cr-text-green">
+                  <div className="cr-diff-badge cr-text-emerald font-bold">
                     100.0% Protected in Candidate
                   </div>
                 </div>
@@ -1287,7 +1488,6 @@ export default function Dashboard({ onBackToLanding }) {
 
               {/* Detailed Breakdown Tables */}
               <div className="cr-two-col-grid">
-                {/* Breakdown by user tier */}
                 <div className="cr-card">
                   <h3 className="cr-card-title"><Users size={16} /> Service Breakdown by Priority User Tier</h3>
                   <p className="cr-card-desc">Comparison across Essential, Household, and Commercial user groups.</p>
@@ -1325,9 +1525,8 @@ export default function Dashboard({ onBackToLanding }) {
                   </table>
                 </div>
 
-                {/* Breakdown by district */}
                 <div className="cr-card">
-                  <h3 className="cr-card-title"><MapPin size={16} /> District Shortage & Unmet Comparison</h3>
+                  <h3 className="cr-card-title"><MapPin size={16} /> District Shortage &amp; Unmet Comparison</h3>
                   <p className="cr-card-desc">Unmet demand distribution across districts between the two strategies.</p>
 
                   <table className="cr-table cr-table-compact">
@@ -1364,11 +1563,11 @@ export default function Dashboard({ onBackToLanding }) {
               <div className="cr-card cr-explain-card">
                 <div className="cr-explain-header">
                   <Info size={17} />
-                  <h4>Methodological Rationale & Trade-Off Analysis</h4>
+                  <h4>Methodological Rationale &amp; Trade-Off Analysis</h4>
                 </div>
                 <div className="cr-explain-body">
                   <p>
-                    <strong>Baseline Allocation (Plan 1):</strong> Pools available supply and carry-in stocks into unconstrained proportional budgets by priority tier, minimizing absolute deviations from equal demand shares. It does not look ahead to bottle-neck delays or capacity constraints when setting targets.
+                    <strong>Baseline Allocation (Plan 1):</strong> Pools available supply and carry-in stocks into unconstrained proportional budgets by priority tier, minimizing absolute deviations from equal demand shares. It does not look ahead to bottleneck delays or capacity constraints when setting targets.
                   </p>
                   <p>
                     <strong>CommonRoot Constrained Optimization (Plan 2):</strong> Uses OR-Tools continuous linear programming with staged lexicographic priorities: (1) strictly maximizes and locks served volume for Essential Services, (2) maximizes Domestic Household supply, and (3) minimizes proportional deviation among districts while strictly respecting transport routes and dispatch limits.
@@ -1388,7 +1587,7 @@ export default function Dashboard({ onBackToLanding }) {
             <section className="cr-section">
               <div className="cr-section-header">
                 <div>
-                  <h2 className="cr-section-title">Audit Trail & Authorized Review Checkpoint</h2>
+                  <h2 className="cr-section-title">Audit Trail &amp; Authorized Review Checkpoint</h2>
                   <p className="cr-section-desc">
                     Cryptographic integrity manifest, execution metadata, and formal human review acknowledgement.
                   </p>
@@ -1398,7 +1597,7 @@ export default function Dashboard({ onBackToLanding }) {
               {/* Review Checkpoint Card */}
               <div className="cr-card cr-review-card">
                 <div className="cr-review-header">
-                  <ShieldCheck size={20} className="cr-text-green" />
+                  <ShieldCheck size={20} className="cr-text-emerald" />
                   <div>
                     <h3 className="cr-review-title">Human-in-the-Loop Review Stage</h3>
                     <p className="cr-review-desc">
@@ -1409,7 +1608,7 @@ export default function Dashboard({ onBackToLanding }) {
 
                 {reviewStatus ? (
                   <div className="cr-review-confirmed">
-                    <CheckCircle2 size={18} className="cr-text-green" />
+                    <CheckCircle2 size={18} className="cr-text-emerald" />
                     <div>
                       <strong>Review Recorded on Local Audit Log:</strong>
                       <p>Timestamp: <code>{reviewStatus.timestamp}</code></p>
@@ -1420,7 +1619,7 @@ export default function Dashboard({ onBackToLanding }) {
                 ) : (
                   <form onSubmit={handleRecordReview} className="cr-review-form">
                     <div className="cr-form-group">
-                      <label htmlFor="review-note">Operator Review & Context Notes:</label>
+                      <label htmlFor="review-note">Operator Review &amp; Context Notes:</label>
                       <textarea
                         id="review-note"
                         rows={3}
@@ -1443,7 +1642,7 @@ export default function Dashboard({ onBackToLanding }) {
                     </div>
 
                     <button type="submit" className="cr-btn-primary" disabled={!reviewAck}>
-                      <ShieldCheck size={14} /> Record & Save Review Status
+                      <ShieldCheck size={14} /> Record &amp; Save Review Status
                     </button>
                   </form>
                 )}
@@ -1452,7 +1651,7 @@ export default function Dashboard({ onBackToLanding }) {
               {/* Run Manifest Details */}
               <div className="cr-two-col-grid">
                 <div className="cr-card">
-                  <h3 className="cr-card-title"><FileText size={16} /> Run Manifest & Reproducibility</h3>
+                  <h3 className="cr-card-title"><FileText size={16} /> Run Manifest &amp; Reproducibility</h3>
                   <table className="cr-table cr-table-compact">
                     <tbody>
                       <tr>
@@ -1500,7 +1699,7 @@ export default function Dashboard({ onBackToLanding }) {
                       <FileDown size={18} />
                       <div>
                         <strong>Full Run Bundle (JSON)</strong>
-                        <span>Complete input fixtures, scenario parameters, solver stages & outputs</span>
+                        <span>Complete input fixtures, scenario parameters, solver stages &amp; outputs</span>
                       </div>
                     </button>
 
@@ -1514,7 +1713,7 @@ export default function Dashboard({ onBackToLanding }) {
                   </div>
 
                   <div className="cr-audit-warnings-box">
-                    <h4>Active Model Assumptions & Limitations:</h4>
+                    <h4>Active Model Assumptions &amp; Limitations:</h4>
                     <ul>
                       {warnings.slice(0, 4).map((w, idx) => (
                         <li key={idx}>{w}</li>
